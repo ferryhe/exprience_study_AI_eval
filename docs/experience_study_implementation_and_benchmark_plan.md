@@ -51,9 +51,11 @@ These facts are release invariants. A mismatch blocks the run unless a new sourc
 
 ### 2.2 Public references
 
+- Local reference inventory and hashes: `data/reference/soa/source_inventory.json`
 - SOA challenge: https://www.soa.org/research/opportunities/2025/ai-life-ins-challenge/
 - Reference study: https://www.soa.org/resources/research-reports/2024/ilec-mort-2012-19/
 - Target main report: https://www.soa.org/globalassets/assets/files/resources/research-report/2024/ilec-mort-main.pdf
+- 2015 VBT methodology and mortality-improvement references: https://www.soa.org/resources/experience-studies/2015/2015-valuation-basic-tables/
 - Reference appendices: https://www.soa.org/globalassets/assets/files/resources/research-report/2024/ilec-mort-appendices.xlsx
 - Target Tableau experience: https://tableau.soa.org/t/soa-public/views/ILEC2012-2019ExperienceData-Final/Notes
 
