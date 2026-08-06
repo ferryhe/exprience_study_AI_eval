@@ -317,14 +317,38 @@ def validate_packs(manifest: dict[str, Any], artifacts: dict[str, dict[str, Any]
         )
 
 
+def validate_provider_state(config: dict[str, Any]) -> None:
+    state = config.get("configuration_state")
+    if state == "pre_probe":
+        if (
+            config["effective_model_id"] is not None
+            or config["effective_model_reason_code"] != "not_probed"
+            or config["version_semantics"] != "resolve_at_pilot_freeze"
+        ):
+            raise ValidationError("pre-probe provider state is inconsistent")
+    elif state == "frozen":
+        if (
+            not isinstance(config["effective_model_id"], str)
+            or not config["effective_model_id"]
+            or config["effective_model_reason_code"] != "capability_probe_confirmed"
+            or config["version_semantics"] != "pinned_exact"
+            or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", config.get("capability_probe_date", ""))
+        ):
+            raise ValidationError("frozen provider state is inconsistent")
+    else:
+        raise ValidationError("provider configuration_state is invalid")
+    expected_tier = "default" if config["provider"] == "openai" else "standard"
+    if config.get("service_tier") != expected_tier:
+        raise ValidationError(f"unexpected service tier: {config['provider']}")
+
+
 def validate_provider_configs() -> None:
     configs = [parse_json(f"configs/providers/{name}.json") for name in ("openai", "anthropic", "kimi", "deepseek")]
     aliases = {config["benchmark_alias"] for config in configs}
     if aliases != {"gpt-5.6-sol", "claude-opus-5", "kimi-k3", "deepseek-v4-pro"}:
         raise ValidationError("provider alias set differs from the approved matrix")
     for config in configs:
-        if config["effective_model_id"] is not None:
-            raise ValidationError("effective model IDs must remain null before capability probe")
+        validate_provider_state(config)
         if not config["api_key_env"].endswith("_API_KEY"):
             raise ValidationError(f"unexpected API key environment name: {config['provider']}")
         serialized = json.dumps(config).lower()

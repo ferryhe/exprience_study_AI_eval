@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/benchmark-contracts/pricing_snapshot.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "captured_at_utc": {"format": "date-time", "type": "string"},
+    "currency": {"const": "USD"},
+    "models": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "model_id": {"minLength": 1, "type": "string"},
+          "provider": {"enum": ["openai", "anthropic", "kimi", "deepseek"]},
+          "effective_at_utc": {"format": "date-time", "type": "string"},
+          "service_tier": {"enum": ["default", "standard", "flex", "priority"]},
+          "source_url": {"format": "uri", "type": "string"},
+          "rates": {
+            "additionalProperties": false,
+            "properties": {
+              "cache_read_input_usd_per_million": {"$ref": "#/$defs/nullableRate"},
+              "cache_write_input_usd_per_million": {"$ref": "#/$defs/nullableRate"},
+              "output_usd_per_million": {"$ref": "#/$defs/nullableRate"},
+              "uncached_input_usd_per_million": {"$ref": "#/$defs/nullableRate"}
+            },
+            "required": [
+              "uncached_input_usd_per_million",
+              "cache_read_input_usd_per_million",
+              "cache_write_input_usd_per_million",
+              "output_usd_per_million"
+            ],
+            "type": "object"
+          }
+        },
+        "required": ["provider", "model_id", "service_tier", "effective_at_utc", "source_url", "rates"],
+        "type": "object"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "schema_version": {"const": "1.0.0"},
+    "snapshot_id": {"minLength": 1, "type": "string"}
+  },
+  "required": ["schema_version", "snapshot_id", "captured_at_utc", "currency", "models"],
+  "title": "Frozen provider pricing snapshot",
+  "type": "object",
+  "$defs": {
+    "nullableRate": {
+      "anyOf": [
+        {"pattern": "^[0-9]+(\\.[0-9]+)?$", "type": "string"},
+        {"type": "null"}
+      ]
+    }
+  }
+}

@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/benchmark-contracts/batch_manifest.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "aggregate": {
+      "additionalProperties": false,
+      "properties": {
+        "cost_complete": {"type": "boolean"},
+        "known_cost_usd": {"pattern": "^[0-9]+(\\.[0-9]+)?$", "type": "string"},
+        "incomplete_attempt_count": {"minimum": 0, "type": "integer"},
+        "known_token_subtotals": {"$ref": "#/$defs/tokenTotals"},
+        "missing_attempt_counts": {"$ref": "#/$defs/tokenTotals"},
+        "run_count": {"minimum": 0, "type": "integer"},
+        "token_missing_runs": {"$ref": "#/$defs/tokenTotals"},
+        "token_totals": {"$ref": "#/$defs/tokenTotals"},
+        "unknown_cost_runs": {"minimum": 0, "type": "integer"}
+      },
+      "required": ["run_count", "token_totals", "token_missing_runs", "known_token_subtotals", "missing_attempt_counts", "known_cost_usd", "unknown_cost_runs", "incomplete_attempt_count", "cost_complete"],
+      "type": "object"
+    },
+    "batch_id": {"pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,119}$", "type": "string"},
+    "cache_lane": {"minLength": 1, "type": "string"},
+    "cache_lane_policy": {"const": "observational_only_no_cache_state_guarantee"},
+    "completed_at_utc": {"format": "date-time", "type": "string"},
+    "execution_order_rule": {"const": "cyclic_rotation_by_repetition"},
+    "outcomes": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "execution_order": {"minimum": 1, "type": "integer"},
+          "provider_alias": {"type": "string"},
+          "repetition": {"minimum": 1, "type": "integer"},
+          "run_manifest_path": {"type": "string"},
+          "status": {"enum": ["accepted", "failed"]}
+        },
+        "required": ["provider_alias", "repetition", "execution_order", "status", "run_manifest_path"],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "planned_repetitions": {"maximum": 20, "minimum": 1, "type": "integer"},
+    "preflight": {"$ref": "#/$defs/preflight"},
+    "pricing_snapshot_id": {"type": "string"},
+    "pricing_snapshot_sha256": {"pattern": "^[a-f0-9]{64}$", "type": "string"},
+    "run_stage": {"enum": ["pilot", "confirmatory"]},
+    "schema_version": {"const": "1.1.0"},
+    "selection_rule": {"type": "string"},
+    "started_at_utc": {"format": "date-time", "type": "string"}
+  },
+  "required": [
+    "schema_version", "batch_id", "run_stage", "started_at_utc", "completed_at_utc", "cache_lane", "cache_lane_policy",
+    "planned_repetitions", "preflight", "pricing_snapshot_id", "pricing_snapshot_sha256", "outcomes",
+    "aggregate", "execution_order_rule", "selection_rule"
+  ],
+  "title": "Direct API benchmark batch manifest",
+  "type": "object",
+  "$defs": {
+    "preflight": {
+      "additionalProperties": false,
+      "properties": {
+        "input_bundle_sha256": {"pattern": "^[a-f0-9]{64}$", "type": "string"},
+        "input_manifest_sha256": {"pattern": "^[a-f0-9]{64}$", "type": "string"},
+        "model_visible_sha256": {"pattern": "^[a-f0-9]{64}$", "type": "string"},
+        "pack_id": {"type": "string"},
+        "providers": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "config_sha256": {"pattern": "^[a-f0-9]{64}$", "type": "string"},
+              "model_visible_sha256": {"pattern": "^[a-f0-9]{64}$", "type": "string"},
+              "provider": {"enum": ["openai", "anthropic", "kimi", "deepseek"]},
+              "provider_alias": {"type": "string"},
+              "request_body_sha256": {"pattern": "^[a-f0-9]{64}$", "type": "string"}
+            },
+            "required": ["provider_alias", "provider", "config_sha256", "request_body_sha256", "model_visible_sha256"],
+            "type": "object"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "schema_version": {"const": "1.0.0"},
+        "static_pack_sha256": {"pattern": "^[a-f0-9]{64}$", "type": "string"},
+        "status": {"const": "preflight_passed"}
+      },
+      "required": ["schema_version", "status", "pack_id", "static_pack_sha256", "input_manifest_sha256", "input_bundle_sha256", "model_visible_sha256", "providers"],
+      "type": "object"
+    },
+    "tokenTotals": {
+      "additionalProperties": false,
+      "properties": {
+        "cache_read_input_tokens": {"minimum": 0, "type": "integer"},
+        "cache_write_input_tokens": {"minimum": 0, "type": "integer"},
+        "input_tokens": {"minimum": 0, "type": "integer"},
+        "output_tokens": {"minimum": 0, "type": "integer"},
+        "reasoning_tokens": {"minimum": 0, "type": "integer"},
+        "total_tokens": {"minimum": 0, "type": "integer"},
+        "uncached_input_tokens": {"minimum": 0, "type": "integer"}
+      },
+      "required": ["input_tokens", "uncached_input_tokens", "cache_read_input_tokens", "cache_write_input_tokens", "output_tokens", "reasoning_tokens", "total_tokens"],
+      "type": "object"
+    }
+  }
+}

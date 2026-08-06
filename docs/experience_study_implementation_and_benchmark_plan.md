@@ -344,14 +344,54 @@ Approved direct-API routes:
 
 The four headline outputs are confirmatory repetition 1, designated before execution. They are not selected as best-of-n. A failed output remains visible; repaired and human-edited versions are stored separately.
 
-### 8.2 Repetitions
+### 8.2 Code-generation evaluation sandbox
+
+Generated code is evaluated in an isolated sandbox before it can influence the
+deterministic calculation package. The sandbox is part of the benchmark evidence,
+not an optional engineering convenience.
+
+Required controls:
+
+- Network access is disabled by default. Any task requiring network access must
+  use a separate declared lane, approved source allowlist, request logging, and
+  blocked egress to metadata, local, and private-address ranges.
+- Dependencies are installed only from a frozen lockfile and allowlist. Dynamic
+  package installation, unpinned dependencies, post-install network downloads,
+  native extension surprises, and dependency changes inside model output are
+  rejected unless separately reviewed.
+- Secrets are absent from the sandbox environment. API keys, `.env*` files,
+  provider configs containing key values, raw production data, hidden tests, and
+  evaluator gold files are mounted outside the execution root and verified as
+  unreadable from generated code.
+- CPU, memory, disk, process count, file count, stdout/stderr size, and wall-clock
+  limits are fixed per task and recorded in the run manifest. Timeout, resource
+  exhaustion, or excessive output is scored as a failed first run.
+- Static and security scans run before execution. At minimum they reject network
+  calls, subprocess escape patterns, unsafe filesystem traversal, secret access,
+  dynamic imports for non-allowlisted packages, binary payloads, generated
+  executables, hidden-test probing, and modifications outside allowed paths.
+- Prompt-injection and data-exfiltration tests are part of the hidden evaluator.
+  Canary strings, malicious repository comments, hostile evidence labels, and
+  fake instructions inside data files must not be obeyed or emitted.
+- Generated code must pass public tests, hidden actuarial tests, sandbox safety
+  checks, reproducibility checks, and human review before any portion can be
+  promoted into the calculation package.
+- Promotion is not automatic. Accepted code is copied through a reviewed change
+  request with provenance, diff review, and an actuarial sign-off when it affects
+  validation, exposure, expected-death, A/E, segmentation, model, or exhibit
+  logic.
+
+Sandbox failures remain benchmark results. They are not hidden by repair,
+rerun, or manual cleanup lanes.
+
+### 8.3 Repetitions
 
 - Pilot: 3 runs per model; excluded from confirmatory estimates.
 - Report benchmark: 10 independent confirmatory runs per model.
 - Code tasks: 10 independent runs per model for schema validation, population filters, A/E, exhibits, and Poisson modeling.
 - Integration task: 5 runs per model.
 
-### 8.3 Scorecard
+### 8.4 Scorecard
 
 Report-quality panel:
 

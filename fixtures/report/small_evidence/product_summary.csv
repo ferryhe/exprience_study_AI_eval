@@ -1,0 +1,3 @@
+evidence_id,product,exposure_policy_years,actual_deaths,expected_deaths,ae_count,sparse_cell
+EXH-002,Term,6200.0,23,20.0,1.15,false
+EXH-002,Whole,3250.5,8,8.4,0.9523809524,true

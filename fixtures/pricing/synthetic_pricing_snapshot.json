@@ -1,0 +1,60 @@
+{
+  "captured_at_utc": "2026-08-06T00:00:00Z",
+  "currency": "USD",
+  "models": [
+    {
+      "model_id": "synthetic-anthropic-model",
+      "provider": "anthropic",
+      "effective_at_utc": "2026-08-06T00:00:00Z",
+      "service_tier": "standard",
+      "source_url": "https://example.invalid/not-live-pricing/anthropic",
+      "rates": {
+        "cache_read_input_usd_per_million": "0.50",
+        "cache_write_input_usd_per_million": "2.00",
+        "output_usd_per_million": "8.00",
+        "uncached_input_usd_per_million": "2.00"
+      }
+    },
+    {
+      "model_id": "synthetic-deepseek-model",
+      "provider": "deepseek",
+      "effective_at_utc": "2026-08-06T00:00:00Z",
+      "service_tier": "standard",
+      "source_url": "https://example.invalid/not-live-pricing/deepseek",
+      "rates": {
+        "cache_read_input_usd_per_million": "0.20",
+        "cache_write_input_usd_per_million": null,
+        "output_usd_per_million": "3.00",
+        "uncached_input_usd_per_million": "1.00"
+      }
+    },
+    {
+      "model_id": "synthetic-kimi-model",
+      "provider": "kimi",
+      "effective_at_utc": "2026-08-06T00:00:00Z",
+      "service_tier": "standard",
+      "source_url": "https://example.invalid/not-live-pricing/kimi",
+      "rates": {
+        "cache_read_input_usd_per_million": null,
+        "cache_write_input_usd_per_million": null,
+        "output_usd_per_million": "4.00",
+        "uncached_input_usd_per_million": "1.50"
+      }
+    },
+    {
+      "model_id": "synthetic-openai-model",
+      "provider": "openai",
+      "effective_at_utc": "2026-08-06T00:00:00Z",
+      "service_tier": "default",
+      "source_url": "https://example.invalid/not-live-pricing/openai",
+      "rates": {
+        "cache_read_input_usd_per_million": "0.25",
+        "cache_write_input_usd_per_million": "1.25",
+        "output_usd_per_million": "10.00",
+        "uncached_input_usd_per_million": "1.25"
+      }
+    }
+  ],
+  "schema_version": "1.0.0",
+  "snapshot_id": "synthetic-unit-test-only-v1"
+}

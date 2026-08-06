@@ -1,5 +1,6 @@
 {
   "schema_version": "1.0.0",
+  "configuration_state": "pre_probe",
   "benchmark_alias": "deepseek-v4-pro",
   "provider": "deepseek",
   "api_style": "openai_chat_completions_compatible",
@@ -12,8 +13,8 @@
   "version_semantics": "resolve_at_pilot_freeze",
   "reasoning_profile": "standardized_high",
   "native_reasoning_settings": {
-    "thinking": "enabled",
-    "effort": "high"
+    "thinking": {"type": "enabled"},
+    "reasoning_effort": "high"
   },
   "primary_response_mode": "json_only_local_validation",
   "max_output_tokens": 32000,
@@ -22,6 +23,8 @@
   "tools_enabled": false,
   "store_response": false,
   "cache_policy": "observe_and_log",
+  "service_tier": "standard",
   "transport_retry_statuses": [408, 409, 429, 500, 502, 503, 504],
+  "transport_retry_errors": ["timeout", "connection_reset", "remote_disconnected"],
   "max_transport_attempts": 3
 }

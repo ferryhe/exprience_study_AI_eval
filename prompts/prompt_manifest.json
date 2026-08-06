@@ -13,29 +13,29 @@
     {
       "path": "configs/providers/anthropic.json",
       "media_type": "application/json",
-      "byte_length": 836,
-      "sha256": "07bc3310b8e678ce18d7d252f8095d0d7de60473c20a0cf4e8a579b82e6ed53d",
+      "byte_length": 988,
+      "sha256": "4fa0a465a55af15936dd493bb440d3a3ba31e152f97edf946904cdc7f2b4a4ad",
       "purpose": "provider_config"
     },
     {
       "path": "configs/providers/deepseek.json",
       "media_type": "application/json",
-      "byte_length": 895,
-      "sha256": "a487c8a5eb113c58d5f7ab6939a11a7c9e6b7d9cd978ff511540e40db7ce5acf",
+      "byte_length": 1067,
+      "sha256": "e2b8e2232a42ea96f42a717b6bebc67f3aec1629575d2c6b89a9f1c874e3cae5",
       "purpose": "provider_config"
     },
     {
       "path": "configs/providers/kimi.json",
       "media_type": "application/json",
-      "byte_length": 891,
-      "sha256": "f3312b99a8f741044528da6b75553f895c0beebc6462eb28fc9ba9e1e8ab7902",
+      "byte_length": 1043,
+      "sha256": "d0ba06882756d46f7629152798a3d0fcebe88b2deb6e0b89726c8348d6bc76f1",
       "purpose": "provider_config"
     },
     {
       "path": "configs/providers/openai.json",
       "media_type": "application/json",
-      "byte_length": 825,
-      "sha256": "0839a4bdf0f8f1333d4d68afd2120b7535d6a88f8b64807c295c44cfc66373f5",
+      "byte_length": 976,
+      "sha256": "ed4f30122750d602b6b70fb11bf6d1aed1d51314ab409a39beea9b1c1ea4deb8",
       "purpose": "provider_config"
     },
     {

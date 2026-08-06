@@ -1,0 +1,38 @@
+{
+  "period": "2018-2019",
+  "publication_rounding": "round only in the publication layer",
+  "rows": [
+    {
+      "Death_Claim_Amount": "200000",
+      "Death_Count": "2",
+      "ExpDth_VBT2015_Amt": "160000",
+      "ExpDth_VBT2015_Cnt": "1.2",
+      "ExpDth_VBT2015wMI_Amt": "150000",
+      "ExpDth_VBT2015wMI_Cnt": "1.0",
+      "product": "Term",
+      "record_id": "SYN-001"
+    },
+    {
+      "Death_Claim_Amount": "100000",
+      "Death_Count": "1",
+      "ExpDth_VBT2015_Amt": "80000",
+      "ExpDth_VBT2015_Cnt": "0.8",
+      "ExpDth_VBT2015wMI_Amt": "100000",
+      "ExpDth_VBT2015wMI_Cnt": "1.0",
+      "product": "Term",
+      "record_id": "SYN-002"
+    },
+    {
+      "Death_Claim_Amount": "0",
+      "Death_Count": "0",
+      "ExpDth_VBT2015_Amt": "0",
+      "ExpDth_VBT2015_Cnt": "0",
+      "ExpDth_VBT2015wMI_Amt": "0",
+      "ExpDth_VBT2015wMI_Cnt": "0",
+      "product": "Whole",
+      "record_id": "SYN-003"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "study_id": "synthetic-c4-smoke-v1"
+}

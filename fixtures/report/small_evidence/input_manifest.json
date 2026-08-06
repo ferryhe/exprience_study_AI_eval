@@ -1,0 +1,61 @@
+{
+  "artifacts": [
+    {
+      "approved_for_model": true,
+      "byte_length": 400,
+      "media_type": "application/json",
+      "path": "fixtures/report/small_evidence/validation_summary.json",
+      "projection": "canonical_json",
+      "sha256": "8e9e4556d927a030fd22a1fdeadeb332b22717cac7eb06adcd4c5f1643891ba9",
+      "source_kind": "evidence_projection"
+    },
+    {
+      "approved_for_model": true,
+      "byte_length": 143,
+      "media_type": "text/csv",
+      "path": "fixtures/report/small_evidence/overview.csv",
+      "projection": "deterministic_csv",
+      "sha256": "28d2257b83c60c2c5656cca8aadf9e226b38d8e90e6bd9e81b2383164bc708ae",
+      "source_kind": "evidence_projection"
+    },
+    {
+      "approved_for_model": true,
+      "byte_length": 177,
+      "media_type": "text/csv",
+      "path": "fixtures/report/small_evidence/product_summary.csv",
+      "projection": "deterministic_csv",
+      "sha256": "ea51aed8caaeb93cb2263d058a37dd6f41f8daa9bffd921f60324ada675208d7",
+      "source_kind": "evidence_projection"
+    },
+    {
+      "approved_for_model": true,
+      "byte_length": 291,
+      "media_type": "application/json",
+      "path": "fixtures/report/small_evidence/methodology.json",
+      "projection": "canonical_json",
+      "sha256": "28c69d7dd1b7c50a74de62791823b5346828a9586e2993f29f2cf62e8e9f9190",
+      "source_kind": "evidence_projection"
+    },
+    {
+      "approved_for_model": true,
+      "byte_length": 415,
+      "media_type": "application/json",
+      "path": "fixtures/report/small_evidence/limitations.json",
+      "projection": "canonical_json",
+      "sha256": "33cc56daf2966a0b2fe7769ccf57a8b68585ee4307b2c9118c5089ef0f4915b1",
+      "source_kind": "evidence_projection"
+    }
+  ],
+  "forbidden_roots": [
+    "data/",
+    "gold/",
+    "tests/hidden/",
+    "reference_implementation/",
+    "outputs/",
+    "runs/"
+  ],
+  "pack_id": "report-v1",
+  "pack_type": "report",
+  "schema_version": "1.0.0",
+  "study_id": "synthetic-report-smoke-v1"
+}

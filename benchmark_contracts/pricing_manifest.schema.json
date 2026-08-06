@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/benchmark-contracts/pricing_manifest.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "snapshots": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "byte_length": {"minimum": 1, "type": "integer"},
+          "path": {"pattern": "^configs/pricing/[A-Za-z0-9][A-Za-z0-9._-]*\\.json$", "type": "string"},
+          "sha256": {"pattern": "^[a-f0-9]{64}$", "type": "string"}
+        },
+        "required": ["path", "byte_length", "sha256"],
+        "type": "object"
+      },
+      "type": "array"
+    }
+  },
+  "required": ["schema_version", "snapshots"],
+  "title": "Registered live pricing snapshots",
+  "type": "object"
+}

@@ -1,0 +1,9 @@
+{
+  "evidence_id": "LIM-001",
+  "limitations": [
+    "This is a synthetic smoke fixture, not a production experience study.",
+    "Age, duration, sex, smoker status, risk class, amount A/E, mortality-improvement, model diagnostics, and confidence intervals are unavailable.",
+    "The sparse Whole-product cell must not support a strong comparative conclusion.",
+    "No actuarial review has been performed."
+  ]
+}

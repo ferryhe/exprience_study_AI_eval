@@ -1,0 +1,13 @@
+{
+  "checks": {
+    "expected_fields_reconciled": "passed",
+    "nonnegative_exposure": "passed",
+    "production_eligibility_rules": "not_available_in_smoke_fixture",
+    "required_columns": "passed"
+  },
+  "evidence_id": "VAL-001",
+  "exposure_policy_years": "9450.5",
+  "record_count": 1200,
+  "study_id": "synthetic-report-smoke-v1",
+  "validation_status": "passed_with_documented_limitations"
+}

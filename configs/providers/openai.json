@@ -1,5 +1,6 @@
 {
   "schema_version": "1.0.0",
+  "configuration_state": "pre_probe",
   "benchmark_alias": "gpt-5.6-sol",
   "provider": "openai",
   "api_style": "responses",
@@ -21,6 +22,8 @@
   "tools_enabled": false,
   "store_response": false,
   "cache_policy": "observe_and_log",
+  "service_tier": "default",
   "transport_retry_statuses": [408, 409, 429, 500, 502, 503, 504],
+  "transport_retry_errors": ["timeout", "connection_reset", "remote_disconnected"],
   "max_transport_attempts": 3
 }

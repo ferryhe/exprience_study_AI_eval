@@ -1,0 +1,11 @@
+[project]
+name = "soa-experience-study-ai-eval"
+version = "0.1.0"
+description = "Reproducible direct-API benchmark harness for the SOA experience-study prompt library."
+requires-python = ">=3.12"
+dependencies = [
+  "jsonschema==4.26.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

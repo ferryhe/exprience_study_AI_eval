@@ -1,0 +1,9 @@
+{
+  "actual_basis": "Death_Count",
+  "ae_method": "ratio_of_sums",
+  "evidence_id": "MET-001",
+  "expected_basis": "ExpDth_VBT2015_Cnt",
+  "mortality_improvement": false,
+  "rounding": "display rounding occurs only after calculation",
+  "uncertainty": "not included in this smoke fixture"
+}

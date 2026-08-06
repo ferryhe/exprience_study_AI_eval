@@ -1,0 +1,24 @@
+{
+  "evaluator_only": true,
+  "expected_by_product": {
+    "Term": {
+      "actual_amount": "300000",
+      "actual_count": "3",
+      "ae_amount": "1.25",
+      "ae_amount_with_mi": "1.2",
+      "ae_count": "1.5",
+      "ae_count_with_mi": "1.5",
+      "expected_amount": "240000",
+      "expected_amount_with_mi": "250000",
+      "expected_count": "2.0",
+      "expected_count_with_mi": "2.0"
+    },
+    "Whole": {
+      "actual_count": "0",
+      "ae_count": null,
+      "expected_count": "0",
+      "reason_code": "zero_expected_denominator"
+    }
+  },
+  "schema_version": "1.0.0"
+}
