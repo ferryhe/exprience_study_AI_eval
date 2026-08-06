@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0.0",
+  "pack_type": "report",
+  "study_id": "ilec-2012-2019-example",
+  "artifacts": [
+    {
+      "path": "evidence/validation_summary.json",
+      "media_type": "application/json",
+      "byte_length": 128,
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "projection": "canonical_json",
+      "approved_for_model": true
+    },
+    {
+      "path": "evidence/tables/overview.csv",
+      "media_type": "text/csv",
+      "byte_length": 256,
+      "sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+      "projection": "deterministic_csv",
+      "approved_for_model": true
+    }
+  ],
+  "forbidden_roots": [
+    "data/",
+    "gold/",
+    "tests/hidden/",
+    "outputs/",
+    "runs/"
+  ]
+}

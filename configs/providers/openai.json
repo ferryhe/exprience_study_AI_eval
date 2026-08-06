@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0.0",
+  "benchmark_alias": "gpt-5.6-sol",
+  "provider": "openai",
+  "api_style": "responses",
+  "base_url": "https://api.openai.com/v1",
+  "endpoint": "/responses",
+  "api_key_env": "OPENAI_API_KEY",
+  "requested_model_id": "gpt-5.6-sol",
+  "effective_model_id": null,
+  "effective_model_reason_code": "not_probed",
+  "version_semantics": "resolve_at_pilot_freeze",
+  "reasoning_profile": "standardized_high",
+  "native_reasoning_settings": {
+    "effort": "high"
+  },
+  "primary_response_mode": "json_only_local_validation",
+  "max_output_tokens": 32000,
+  "wall_clock_timeout_seconds": 900,
+  "max_turns": 1,
+  "tools_enabled": false,
+  "store_response": false,
+  "cache_policy": "observe_and_log",
+  "transport_retry_statuses": [408, 409, 429, 500, 502, 503, 504],
+  "max_transport_attempts": 3
+}

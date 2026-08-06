@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/prompt_manifest.schema.json",
+  "title": "Prompt-library manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "library_version",
+    "status",
+    "canonicalization",
+    "artifacts",
+    "packs",
+    "review"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "library_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "status": {
+      "enum": ["draft", "pilot-frozen", "confirmatory-frozen"]
+    },
+    "canonicalization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format", "text_encoding", "line_endings", "unicode", "terminal_newline"],
+      "properties": {
+        "format": {"const": "cpack-length-prefixed-v1"},
+        "text_encoding": {"const": "utf-8-no-bom"},
+        "line_endings": {"const": "lf"},
+        "unicode": {"const": "NFC"},
+        "terminal_newline": {"const": true}
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "media_type", "byte_length", "sha256", "purpose"],
+        "properties": {
+          "path": {"type": "string", "pattern": "^[A-Za-z0-9_][A-Za-z0-9._/-]*$"},
+          "media_type": {"type": "string", "minLength": 1},
+          "byte_length": {"type": "integer", "minimum": 1},
+          "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "purpose": {"enum": ["prompt", "schema", "manifest_example", "provider_config"]}
+        }
+      }
+    },
+    "packs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["pack_id", "components", "pack_sha256"],
+        "properties": {
+          "pack_id": {"type": "string", "pattern": "^[a-z0-9-]+$"},
+          "components": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["role", "path"],
+              "properties": {
+                "role": {"enum": ["system", "user"]},
+                "path": {"type": "string", "pattern": "^[A-Za-z0-9_][A-Za-z0-9._/-]*$"}
+              }
+            }
+          },
+          "pack_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+        }
+      }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reviewed", "decision", "date"],
+      "properties": {
+        "reviewed": {"const": true},
+        "decision": {"const": "approved-for-draft-v1"},
+        "date": {"type": "string", "format": "date"}
+      }
+    }
+  }
+}

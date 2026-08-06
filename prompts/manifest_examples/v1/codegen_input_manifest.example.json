@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0.0",
+  "pack_type": "codegen",
+  "task_id": "C4",
+  "artifacts": [
+    {
+      "path": "starter/src/soa_experience/calculations/interfaces.py",
+      "media_type": "text/x-python",
+      "byte_length": 128,
+      "sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+      "source_kind": "starter_repository",
+      "approved_for_model": true
+    },
+    {
+      "path": "fixtures/ae_small.json",
+      "media_type": "application/json",
+      "byte_length": 256,
+      "sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+      "source_kind": "synthetic_fixture",
+      "approved_for_model": true
+    }
+  ],
+  "forbidden_roots": [
+    "data/",
+    "gold/",
+    "tests/hidden/",
+    "reference_implementation/",
+    "outputs/",
+    "runs/"
+  ],
+  "canary": "PROMPT_PACK_LEAKAGE_CANARY_EXAMPLE"
+}

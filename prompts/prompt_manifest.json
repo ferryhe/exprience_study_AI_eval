@@ -1,0 +1,287 @@
+{
+  "schema_version": "1.0.0",
+  "library_version": "0.1.0",
+  "status": "draft",
+  "canonicalization": {
+    "format": "cpack-length-prefixed-v1",
+    "text_encoding": "utf-8-no-bom",
+    "line_endings": "lf",
+    "unicode": "NFC",
+    "terminal_newline": true
+  },
+  "artifacts": [
+    {
+      "path": "configs/providers/anthropic.json",
+      "media_type": "application/json",
+      "byte_length": 836,
+      "sha256": "07bc3310b8e678ce18d7d252f8095d0d7de60473c20a0cf4e8a579b82e6ed53d",
+      "purpose": "provider_config"
+    },
+    {
+      "path": "configs/providers/deepseek.json",
+      "media_type": "application/json",
+      "byte_length": 895,
+      "sha256": "a487c8a5eb113c58d5f7ab6939a11a7c9e6b7d9cd978ff511540e40db7ce5acf",
+      "purpose": "provider_config"
+    },
+    {
+      "path": "configs/providers/kimi.json",
+      "media_type": "application/json",
+      "byte_length": 891,
+      "sha256": "f3312b99a8f741044528da6b75553f895c0beebc6462eb28fc9ba9e1e8ab7902",
+      "purpose": "provider_config"
+    },
+    {
+      "path": "configs/providers/openai.json",
+      "media_type": "application/json",
+      "byte_length": 825,
+      "sha256": "0839a4bdf0f8f1333d4d68afd2120b7535d6a88f8b64807c295c44cfc66373f5",
+      "purpose": "provider_config"
+    },
+    {
+      "path": "prompts/codegen/v1/shared_instructions.md",
+      "media_type": "text/markdown",
+      "byte_length": 1520,
+      "sha256": "896e16b8942f3293207b5c47cbba37e693747598bd1a1f6f31d30c49597dbd89",
+      "purpose": "prompt"
+    },
+    {
+      "path": "prompts/codegen/v1/tasks/01_ingestion_schema.md",
+      "media_type": "text/markdown",
+      "byte_length": 1604,
+      "sha256": "8c06238dd54aa4b34d021604ccb6d84df6c4f5e8a9e1005663cc37cd871788af",
+      "purpose": "prompt"
+    },
+    {
+      "path": "prompts/codegen/v1/tasks/02_validation_rules.md",
+      "media_type": "text/markdown",
+      "byte_length": 1513,
+      "sha256": "d3f27a884c5adbe43bce0f674fe2953cd6c99e27f8a3b48fc74279a74c9d98a8",
+      "purpose": "prompt"
+    },
+    {
+      "path": "prompts/codegen/v1/tasks/03_population_filters.md",
+      "media_type": "text/markdown",
+      "byte_length": 1376,
+      "sha256": "5d4c67c8d8a31287f432c93c7706926eef6268eeb7070b6ee280306c31b52f4a",
+      "purpose": "prompt"
+    },
+    {
+      "path": "prompts/codegen/v1/tasks/04_actual_to_expected.md",
+      "media_type": "text/markdown",
+      "byte_length": 1634,
+      "sha256": "a4de12ed94109d9b012b5ec8615b6177a357da6ac5b56ae2bb610fd82e1d24ad",
+      "purpose": "prompt"
+    },
+    {
+      "path": "prompts/codegen/v1/tasks/05_segmented_exhibits.md",
+      "media_type": "text/markdown",
+      "byte_length": 1540,
+      "sha256": "ea375282868ad60a1f9cbc18c60cdb49ee9be157a4199acbe20ca1593d2bb660",
+      "purpose": "prompt"
+    },
+    {
+      "path": "prompts/codegen/v1/tasks/06_poisson_glm.md",
+      "media_type": "text/markdown",
+      "byte_length": 1484,
+      "sha256": "2c976f1084eed9d8769f4acd1a58c0dedadc81c1fdc1f7f75dff1d379fcd363e",
+      "purpose": "prompt"
+    },
+    {
+      "path": "prompts/codegen/v1/tasks/07_integration.md",
+      "media_type": "text/markdown",
+      "byte_length": 1682,
+      "sha256": "f59df8a2841e8e1164a7e16094b78ddb63b9704b86e4f55d76a56379a8fc7cd4",
+      "purpose": "prompt"
+    },
+    {
+      "path": "prompts/common/v1/evidence_rules.md",
+      "media_type": "text/markdown",
+      "byte_length": 907,
+      "sha256": "4eac68d978da929f7d67514a113ee82e9107d17cce21f5bac054d2cc0b3f101d",
+      "purpose": "prompt"
+    },
+    {
+      "path": "prompts/common/v1/output_rules.md",
+      "media_type": "text/markdown",
+      "byte_length": 718,
+      "sha256": "f359f5b86242b0650539ec56ff87ed8f8a357c9b21ef61702cb398181e3f4a4b",
+      "purpose": "prompt"
+    },
+    {
+      "path": "prompts/common/v1/system.md",
+      "media_type": "text/markdown",
+      "byte_length": 1117,
+      "sha256": "62fa43d4d233b1b97abee323500a94ed6f813991644589e4a59294c8b6e6ef9b",
+      "purpose": "prompt"
+    },
+    {
+      "path": "prompts/manifest_examples/v1/codegen_input_manifest.example.json",
+      "media_type": "application/json",
+      "byte_length": 869,
+      "sha256": "5f39bec57a87c7043db7dbe18108c90267854191cc002af68c8f40e9a0e7a167",
+      "purpose": "manifest_example"
+    },
+    {
+      "path": "prompts/manifest_examples/v1/report_input_manifest.example.json",
+      "media_type": "application/json",
+      "byte_length": 780,
+      "sha256": "697775d936d3ae36959a8659c95669b5d7fdcdd710bbb4845822429e5439ef82",
+      "purpose": "manifest_example"
+    },
+    {
+      "path": "prompts/report/v1/limitation_checklist.md",
+      "media_type": "text/markdown",
+      "byte_length": 1289,
+      "sha256": "e2c9096efea6adbb0f4e096601a47fc52ea72001e76c16f4ade1c3dea24bf139",
+      "purpose": "prompt"
+    },
+    {
+      "path": "prompts/report/v1/report_outline.md",
+      "media_type": "text/markdown",
+      "byte_length": 1578,
+      "sha256": "15ef8ec8528d5c8adb18e0f4769f3ce7151c9f56056e508eaf3bb4da9a60cd8e",
+      "purpose": "prompt"
+    },
+    {
+      "path": "prompts/report/v1/style_guide.md",
+      "media_type": "text/markdown",
+      "byte_length": 917,
+      "sha256": "04d44b02031f4ba8b9a8a11c340a2397c7bdf1e6e865a8783a29b67af4723af4",
+      "purpose": "prompt"
+    },
+    {
+      "path": "prompts/report/v1/user.md",
+      "media_type": "text/markdown",
+      "byte_length": 893,
+      "sha256": "8a4fdd6cdb99e895f001be0982d49bff8d1df496a0ac2935f5cd5c6378dabcf2",
+      "purpose": "prompt"
+    },
+    {
+      "path": "schemas/codegen_submission.schema.json",
+      "media_type": "application/json",
+      "byte_length": 1787,
+      "sha256": "475998754bd1a77df4076ea114a7552101dc77be622c9021a8fede8837fa7da3",
+      "purpose": "schema"
+    },
+    {
+      "path": "schemas/model_report.schema.json",
+      "media_type": "application/json",
+      "byte_length": 7685,
+      "sha256": "88146684f05f7a29f4c3ac48ee2c7644db8d87afe3c3cd10fe702d6b963c300b",
+      "purpose": "schema"
+    },
+    {
+      "path": "schemas/prompt_manifest.schema.json",
+      "media_type": "application/json",
+      "byte_length": 2855,
+      "sha256": "000d99550f1c954e16fbf71087ec475efd6d6749e570739ecd6321660538236d",
+      "purpose": "schema"
+    }
+  ],
+  "packs": [
+    {
+      "pack_id": "report-v1",
+      "components": [
+        {"role": "system", "path": "prompts/common/v1/system.md"},
+        {"role": "system", "path": "prompts/common/v1/evidence_rules.md"},
+        {"role": "system", "path": "prompts/common/v1/output_rules.md"},
+        {"role": "user", "path": "prompts/report/v1/user.md"},
+        {"role": "user", "path": "prompts/report/v1/report_outline.md"},
+        {"role": "user", "path": "prompts/report/v1/limitation_checklist.md"},
+        {"role": "user", "path": "prompts/report/v1/style_guide.md"},
+        {"role": "user", "path": "schemas/model_report.schema.json"}
+      ],
+      "pack_sha256": "d9702dc119abe8365c3596dd70cb63d2ef1980ed0541ab23041f25d791caa7e7"
+    },
+    {
+      "pack_id": "codegen-c1-v1",
+      "components": [
+        {"role": "system", "path": "prompts/common/v1/system.md"},
+        {"role": "system", "path": "prompts/common/v1/evidence_rules.md"},
+        {"role": "system", "path": "prompts/common/v1/output_rules.md"},
+        {"role": "user", "path": "prompts/codegen/v1/shared_instructions.md"},
+        {"role": "user", "path": "prompts/codegen/v1/tasks/01_ingestion_schema.md"},
+        {"role": "user", "path": "schemas/codegen_submission.schema.json"}
+      ],
+      "pack_sha256": "f5506981989d78adfa50baba4c8f1deedc8851cf5b413e31129eb6c0e5180cb7"
+    },
+    {
+      "pack_id": "codegen-c2-v1",
+      "components": [
+        {"role": "system", "path": "prompts/common/v1/system.md"},
+        {"role": "system", "path": "prompts/common/v1/evidence_rules.md"},
+        {"role": "system", "path": "prompts/common/v1/output_rules.md"},
+        {"role": "user", "path": "prompts/codegen/v1/shared_instructions.md"},
+        {"role": "user", "path": "prompts/codegen/v1/tasks/02_validation_rules.md"},
+        {"role": "user", "path": "schemas/codegen_submission.schema.json"}
+      ],
+      "pack_sha256": "e0d3471df8b11361b550cb5941d11b7ced42a854fcbe635b6e69d6293fdf9d53"
+    },
+    {
+      "pack_id": "codegen-c3-v1",
+      "components": [
+        {"role": "system", "path": "prompts/common/v1/system.md"},
+        {"role": "system", "path": "prompts/common/v1/evidence_rules.md"},
+        {"role": "system", "path": "prompts/common/v1/output_rules.md"},
+        {"role": "user", "path": "prompts/codegen/v1/shared_instructions.md"},
+        {"role": "user", "path": "prompts/codegen/v1/tasks/03_population_filters.md"},
+        {"role": "user", "path": "schemas/codegen_submission.schema.json"}
+      ],
+      "pack_sha256": "dd046393fad9819b5389a5d10203dc71f9e26a08d3e209a32dadab74821efb6d"
+    },
+    {
+      "pack_id": "codegen-c4-v1",
+      "components": [
+        {"role": "system", "path": "prompts/common/v1/system.md"},
+        {"role": "system", "path": "prompts/common/v1/evidence_rules.md"},
+        {"role": "system", "path": "prompts/common/v1/output_rules.md"},
+        {"role": "user", "path": "prompts/codegen/v1/shared_instructions.md"},
+        {"role": "user", "path": "prompts/codegen/v1/tasks/04_actual_to_expected.md"},
+        {"role": "user", "path": "schemas/codegen_submission.schema.json"}
+      ],
+      "pack_sha256": "44dddfad34c2a16876fbdf95c40280c3ba257210c0a0b0485c59aaf6b5ef8fb7"
+    },
+    {
+      "pack_id": "codegen-c5-v1",
+      "components": [
+        {"role": "system", "path": "prompts/common/v1/system.md"},
+        {"role": "system", "path": "prompts/common/v1/evidence_rules.md"},
+        {"role": "system", "path": "prompts/common/v1/output_rules.md"},
+        {"role": "user", "path": "prompts/codegen/v1/shared_instructions.md"},
+        {"role": "user", "path": "prompts/codegen/v1/tasks/05_segmented_exhibits.md"},
+        {"role": "user", "path": "schemas/codegen_submission.schema.json"}
+      ],
+      "pack_sha256": "59c153cfd14496196e4e0429dfc7122e00032be3b1d29967f3b35481d32f0922"
+    },
+    {
+      "pack_id": "codegen-c6-v1",
+      "components": [
+        {"role": "system", "path": "prompts/common/v1/system.md"},
+        {"role": "system", "path": "prompts/common/v1/evidence_rules.md"},
+        {"role": "system", "path": "prompts/common/v1/output_rules.md"},
+        {"role": "user", "path": "prompts/codegen/v1/shared_instructions.md"},
+        {"role": "user", "path": "prompts/codegen/v1/tasks/06_poisson_glm.md"},
+        {"role": "user", "path": "schemas/codegen_submission.schema.json"}
+      ],
+      "pack_sha256": "ad5cb17bcc1736fd7c65cb6b5b41592b39c393884b5e0bf11598f0bcbe8abe84"
+    },
+    {
+      "pack_id": "codegen-c7-v1",
+      "components": [
+        {"role": "system", "path": "prompts/common/v1/system.md"},
+        {"role": "system", "path": "prompts/common/v1/evidence_rules.md"},
+        {"role": "system", "path": "prompts/common/v1/output_rules.md"},
+        {"role": "user", "path": "prompts/codegen/v1/shared_instructions.md"},
+        {"role": "user", "path": "prompts/codegen/v1/tasks/07_integration.md"},
+        {"role": "user", "path": "schemas/codegen_submission.schema.json"}
+      ],
+      "pack_sha256": "25f8d087b2fa80f8c1638fd0aef7ee029f1f8a2b56c663569e67976f492aa29f"
+    }
+  ],
+  "review": {
+    "reviewed": true,
+    "decision": "approved-for-draft-v1",
+    "date": "2026-08-06"
+  }
+}
