@@ -364,7 +364,8 @@ Required controls:
   evaluator gold files are mounted outside the execution root and verified as
   unreadable from generated code.
 - CPU, memory, disk, process count, file count, stdout/stderr size, and wall-clock
-  limits are fixed per task and recorded in the run manifest. Timeout, resource
+  limits are fixed per task and recorded in a sandbox evaluation manifest linked
+  to the immutable API run manifest. Timeout, resource
   exhaustion, or excessive output is scored as a failed first run.
 - Static and security scans run before execution. At minimum they reject network
   calls, subprocess escape patterns, unsafe filesystem traversal, secret access,

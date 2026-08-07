@@ -53,7 +53,7 @@ from .providers import (
 )
 
 
-RUNNER_VERSION = "0.2.0"
+RUNNER_VERSION = "0.3.0"
 PROBE_MAX_OUTPUT_TOKENS = 64
 RUN_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,119}$")
 DEFAULT_PROVIDER_CONFIGS = (
@@ -268,6 +268,36 @@ def _validate_codegen_semantics(pack_id: str, parsed: Any) -> str | None:
     if total_bytes > 1_000_000:
         return "codegen_submission_too_large"
     return None
+
+
+def _model_declared_status(model_text: str | None) -> str | None:
+    if model_text is None:
+        return None
+    try:
+        parsed = json.loads(model_text)
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(parsed, dict):
+        return None
+    status = parsed.get("status")
+    return status if status in {"completed", "incomplete", "blocked"} else None
+
+
+def _persist_extracted_output(
+    run_dir: Path, pack_id: str, model_text: str | None
+) -> dict[str, Any]:
+    """Persist exact extracted model-visible text separately from provider JSON."""
+    if model_text is None:
+        return {"path": None, "sha256": None, "byte_length": None, "media_type": None}
+    name = "extracted_submission.json" if pack_id in CODEGEN_OUTPUT_PATHS else "extracted_report.json"
+    content = model_text.encode("utf-8")
+    _safe_write(run_dir / name, content)
+    return {
+        "path": name,
+        "sha256": sha256(content),
+        "byte_length": len(content),
+        "media_type": "application/json",
+    }
 
 
 def _validate_document(record: dict[str, Any], schema_path: str, label: str) -> None:
@@ -739,6 +769,8 @@ def run_once(
             schema_valid, validation_failure = _validate_model_json(prompt.pack_id, model_text)
         except ProviderError:
             validation_failure = "response_extraction_failed"
+    extracted_output = _persist_extracted_output(run_dir, prompt.pack_id, model_text)
+    model_declared_status = _model_declared_status(model_text)
 
     returned_id = returned_model_id(config, response_json) if response_json else None
     returned_tier = returned_service_tier(config, response_json) if response_json else None
@@ -758,10 +790,10 @@ def run_once(
     )
     terminal_attempt = attempts[-1]
     record = {
-        "schema_version": "1.1.0",
+        "schema_version": "1.2.0",
         "run_id": run_id,
         "run_stage": run_stage,
-        "status": "accepted" if schema_valid else "failed",
+        "status": "response_contract_valid" if schema_valid else "failed",
         "started_at_utc": started_at,
         "completed_at_utc": utc_now(),
         "cache_lane": cache_lane,
@@ -793,6 +825,7 @@ def run_once(
             "raw_response_path": terminal_attempt["raw_response_path"],
             "raw_response_sha256": sha256(raw) if raw is not None else None,
         },
+        "extracted_output": extracted_output,
         "metrics": {
             "total_elapsed_ms": round(result["total_elapsed_ms"], 3),
             "final_attempt_latency_ms": round(result["latency_ms"], 3) if result["latency_ms"] is not None else None,
@@ -807,6 +840,8 @@ def run_once(
             "response_schema_valid": schema_valid,
             "failure_code": validation_failure,
             "model_output_sha256": sha256(model_text.encode("utf-8")) if model_text is not None else None,
+            "acceptance_scope": "transport_and_output_contract_only",
+            "model_declared_status": model_declared_status,
         },
         "replay": _replay(config, result["attempt_responses"], identity),
     }
@@ -928,7 +963,7 @@ def run_matrix(
                 "run_manifest_path": manifest_path.relative_to(batch_dir).as_posix(),
             })
     batch_manifest = {
-        "schema_version": "1.1.0",
+        "schema_version": "1.2.0",
         "batch_id": generated,
         "run_stage": run_stage,
         "started_at_utc": started_at,

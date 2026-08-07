@@ -18,6 +18,7 @@ from soa_benchmark.canonical import render_prompt  # noqa: E402
 from soa_benchmark.billing import calculate_cost, load_pricing_snapshot  # noqa: E402
 from soa_benchmark.providers import build_payload, load_provider_config  # noqa: E402
 from soa_benchmark.runner import DEFAULT_PROVIDER_CONFIGS, preflight  # noqa: E402
+from soa_benchmark.sandbox import load_sandbox_policy, scan_submission  # noqa: E402
 
 
 def decimal_text(value: Decimal) -> str:
@@ -69,6 +70,8 @@ def verify_contract_schema() -> None:
         "batch_manifest.schema.json",
         "pricing_snapshot.schema.json",
         "pricing_manifest.schema.json",
+        "sandbox_policy.schema.json",
+        "sandbox_evaluation_manifest.schema.json",
     ):
         schema = json.loads((ROOT / "benchmark_contracts" / name).read_text(encoding="utf-8"))
         Draft202012Validator.check_schema(schema)
@@ -91,6 +94,40 @@ def verify_dependency_lock() -> None:
     for name, pinned in locked.items():
         if version(name) != pinned:
             raise AssertionError(f"installed dependency differs from lock: {name}")
+
+
+def verify_codegen_sandbox_contract() -> None:
+    policy = load_sandbox_policy("configs/sandbox/codegen-c4-v1.json")
+    if policy.data["configuration_state"] != "pre_freeze":
+        raise AssertionError("C4 sandbox policy must remain pre-freeze until its image is pinned")
+    lock_lines = (ROOT / "fixtures/codegen/c4/requirements.lock").read_text(
+        encoding="utf-8"
+    ).splitlines()
+    if any(line.strip() and not line.lstrip().startswith("#") for line in lock_lines):
+        raise AssertionError("C4 standard-library-only dependency lock contains a package")
+    malicious = {
+        "files": [
+            {
+                "path": "src/soa_experience/calculations/actual_to_expected.py",
+                "content": "import socket\nopen('.env.local').read()\n",
+            }
+        ]
+    }
+    finding_codes = {item["code"] for item in scan_submission(malicious, policy)}
+    if not {"forbidden_import", "forbidden_call", "forbidden_text_pattern"}.issubset(
+        finding_codes
+    ):
+        raise AssertionError("sandbox static gate did not reject the adversarial fixture")
+    benign = {
+        "files": [
+            {
+                "path": "src/soa_experience/calculations/actual_to_expected.py",
+                "content": "from decimal import Decimal\n\ndef ratio(a, e):\n    return None if not e else Decimal(a) / Decimal(e)\n",
+            }
+        ]
+    }
+    if scan_submission(benign, policy):
+        raise AssertionError("sandbox static gate rejected the benign fixture")
 
 
 def verify_provider_and_cost_contracts() -> None:
@@ -133,6 +170,7 @@ def main() -> int:
         verify_contract_schema()
         verify_provider_and_cost_contracts()
         verify_dependency_lock()
+        verify_codegen_sandbox_contract()
         c4_prompt = render_prompt("codegen-c4-v1", "fixtures/codegen/c4/input_manifest.json")
         report_prompt = render_prompt("report-v1", "fixtures/report/small_evidence/input_manifest.json")
         for prompt in (c4_prompt, report_prompt):

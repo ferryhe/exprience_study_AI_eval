@@ -32,7 +32,7 @@
           "provider_alias": {"type": "string"},
           "repetition": {"minimum": 1, "type": "integer"},
           "run_manifest_path": {"type": "string"},
-          "status": {"enum": ["accepted", "failed"]}
+          "status": {"enum": ["response_contract_valid", "failed"]}
         },
         "required": ["provider_alias", "repetition", "execution_order", "status", "run_manifest_path"],
         "type": "object"
@@ -44,7 +44,7 @@
     "pricing_snapshot_id": {"type": "string"},
     "pricing_snapshot_sha256": {"pattern": "^[a-f0-9]{64}$", "type": "string"},
     "run_stage": {"enum": ["pilot", "confirmatory"]},
-    "schema_version": {"const": "1.1.0"},
+    "schema_version": {"const": "1.2.0"},
     "selection_rule": {"type": "string"},
     "started_at_utc": {"format": "date-time", "type": "string"}
   },

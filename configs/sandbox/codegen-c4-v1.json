@@ -1,0 +1,100 @@
+{
+  "applies_to_pack_ids": [
+    "codegen-c4-v1"
+  ],
+  "configuration_state": "pre_freeze",
+  "dependencies": {
+    "allowed_import_roots": [
+      "collections",
+      "dataclasses",
+      "decimal",
+      "functools",
+      "itertools",
+      "math",
+      "soa_experience",
+      "statistics",
+      "typing"
+    ],
+    "runtime_installation_allowed": false
+  },
+  "isolation": {
+    "backend": "docker_linux",
+    "cap_drop_all": true,
+    "image_digest": null,
+    "image_reference": null,
+    "level": "strong",
+    "network": "none",
+    "no_new_privileges": true,
+    "read_only_root": true,
+    "repository_mount_allowed": false,
+    "run_as_non_root": true
+  },
+  "policy_id": "codegen-c4-sandbox-v1",
+  "resource_limits": {
+    "cpu_seconds": 30,
+    "disk_mb": 128,
+    "file_count": 200,
+    "memory_mb": 512,
+    "output_bytes": 1000000,
+    "pids": 32,
+    "wall_clock_seconds": 60
+  },
+  "schema_version": "1.0.0",
+  "static_scan": {
+    "allowed_suffixes": [
+      ".py"
+    ],
+    "forbidden_calls": [
+      "__import__",
+      "breakpoint",
+      "compile",
+      "eval",
+      "exec",
+      "getattr",
+      "globals",
+      "input",
+      "locals",
+      "open",
+      "setattr",
+      "vars"
+    ],
+    "forbidden_import_roots": [
+      "asyncio",
+      "ctypes",
+      "ftplib",
+      "http",
+      "importlib",
+      "multiprocessing",
+      "os",
+      "pathlib",
+      "pickle",
+      "shelve",
+      "shutil",
+      "socket",
+      "subprocess",
+      "sys",
+      "telnetlib",
+      "tempfile",
+      "urllib"
+    ],
+    "forbidden_text_patterns": [
+      ".env",
+      "api_key",
+      "expected_ae.json",
+      "git config",
+      "pip install",
+      "powershell",
+      "prompt_pack_leakage_canary",
+      "provider credentials"
+    ]
+  },
+  "test_gates": {
+    "deterministic_repetitions": 2,
+    "exfiltration_suite_id": "codegen-exfiltration-v1",
+    "hidden_expected_values_mounted": false,
+    "hidden_protocol": "external_black_box",
+    "hidden_suite_id": "c4-hidden-actuarial-v1",
+    "prompt_injection_suite_id": "codegen-prompt-injection-v1",
+    "public_suite_id": "c4-public-v1"
+  }
+}

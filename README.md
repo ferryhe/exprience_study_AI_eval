@@ -35,12 +35,18 @@ The current repository primarily contains the benchmark preparation layer:
 prompt library, provider configuration stubs, schemas, synthetic fixtures,
 offline validation, and the direct-API runner skeleton.
 
-For code-generation benchmark tasks, model output is evaluated in an isolated
+For code-generation benchmark tasks, model output will be evaluated in an isolated
 sandbox before it can influence production calculation code. The sandbox must
 disable primary-lane network access, use a dependency allowlist and frozen
 lockfile, isolate secrets and evaluator assets, enforce resource and time
 limits, run static/security scans, test prompt-injection and data-exfiltration
 cases, and require tests plus human approval before promotion.
+
+The implemented first sandbox phase stores the exact extracted submission,
+labels API success as `response_contract_valid`, applies a deterministic static
+policy gate, materializes only statically approved files below `runs/`, and emits
+a separate sandbox evaluation manifest. The public policy remains `pre_freeze`,
+so generated code is not executed and cannot become promotion-eligible yet.
 
 ## Target Provider Routes
 
@@ -60,6 +66,7 @@ matrix run.
 ```text
 benchmark_contracts/   JSON Schemas for run, probe, batch, and pricing manifests
 configs/providers/     Public provider envelope settings, no secrets
+configs/sandbox/       Public code-generation isolation and static-scan policy
 configs/pricing/       Registered live pricing snapshots, currently gated
 data/                  Local SOA source data, Git-ignored
 docs/                  Delivery plan and benchmark readiness notes
@@ -68,7 +75,7 @@ prompts/               Frozen provider-neutral prompt sources and manifest
 runs/                  Local raw API responses and run manifests, Git-ignored
 schemas/               Prompt, report, and code-submission schemas
 scripts/               Validation and benchmark CLI entry points
-src/soa_benchmark/     Canonical prompt loading, providers, runner, and billing
+src/soa_benchmark/     Prompt, provider, billing, runner, and sandbox gates
 tests/                 Offline safety and contract tests
 ```
 
@@ -113,6 +120,17 @@ python scripts/run_benchmark.py preflight --pack-id report-v1 --input-manifest f
 
 These commands do not require API keys and do not send provider requests.
 
+After an API run has produced a code submission, the non-executing first-phase
+sandbox gate can be invoked with:
+
+```text
+python scripts/run_benchmark.py evaluate-codegen --run-manifest runs/<run-id>/run_manifest.json
+```
+
+Until the policy has a verified digest-pinned container image, this command can
+pass static scanning and materialization but must return a blocked machine
+disposition without executing generated code.
+
 ## Live Benchmark Gate
 
 Paid API runs are intentionally blocked until all selected provider routes pass
@@ -141,6 +159,8 @@ python scripts/run_benchmark.py run --pack-id codegen-c4-v1 --input-manifest fix
 
 ## Main References
 
+- Benchmark operation manual:
+  `docs/benchmark_operation_manual.md`
 - Final delivery specification:
   `docs/experience_study_implementation_and_benchmark_plan.md`
 - Prompt-library design:
@@ -154,6 +174,9 @@ python scripts/run_benchmark.py run --pack-id codegen-c4-v1 --input-manifest fix
 
 ## Current Status
 
-The offline benchmark harness and synthetic fixtures are testable. Formal API
-comparison is not yet released because live capability probes, frozen effective
-model IDs, and official pricing snapshots are still required.
+The offline benchmark harness, synthetic fixtures, extracted-submission handoff,
+and non-executing static sandbox gate are testable. Formal API comparison still
+requires live capability probes, frozen effective model IDs, and official
+pricing snapshots. Formal code execution additionally requires a frozen strong
+container policy, public and external-black-box hidden tests, reproducibility
+checks, and separate human/actuarial promotion approval.

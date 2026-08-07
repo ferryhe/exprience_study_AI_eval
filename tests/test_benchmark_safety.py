@@ -457,7 +457,15 @@ class BillingAndRunnerTests(unittest.TestCase):
                     "offline-run",
                 )
             record = json.loads(output.read_text(encoding="utf-8"))
-            self.assertEqual(record["status"], "accepted")
+            self.assertEqual(record["status"], "response_contract_valid")
+            self.assertEqual(
+                record["validation"]["acceptance_scope"],
+                "transport_and_output_contract_only",
+            )
+            self.assertEqual(record["validation"]["model_declared_status"], "completed")
+            extracted = output.parent / record["extracted_output"]["path"]
+            self.assertEqual(extracted.read_text(encoding="utf-8"), output_text)
+            self.assertEqual(record["extracted_output"]["byte_length"], len(output_text))
             self.assertTrue(record["cost"]["complete"])
             self.assertEqual(record["attempts"][0]["usage"]["reasoning_tokens"], 5)
 

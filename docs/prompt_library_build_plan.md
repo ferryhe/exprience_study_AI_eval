@@ -72,6 +72,13 @@ environment containing secrets. They are materialized into a fresh sandbox with
 only the allowlisted starter files, fixtures, public tests, dependency lock, and
 task contract.
 
+Implementation status: the first phase now stores the exact extracted submission,
+uses a separate sandbox evaluation manifest, applies a deterministic static gate,
+and materializes approved source below `runs/`. The current policy is
+`pre_freeze`, so it deliberately blocks execution. Strong container execution,
+runtime adversarial suites, hidden black-box evaluation, reproducibility, and
+promotion approval remain required before confirmatory code scoring.
+
 Sandbox requirements:
 
 - Network access is disabled for the primary lane. A separate network-enabled
@@ -90,8 +97,8 @@ Sandbox requirements:
   subprocess escapes, suspicious filesystem traversal, secret reads, dynamic
   imports outside the allowlist, binary payloads, generated executables,
   hidden-test probing, and writes outside allowed paths.
-- Prompt-injection and data-exfiltration cases are included in public and hidden
-  evaluation. The generated code must ignore malicious instructions embedded in
+- Prompt-injection and data-exfiltration cases must be included in public and
+  hidden evaluation. The generated code must ignore malicious instructions embedded in
   comments, fixture labels, README text, and data-like artifacts, and it must not
   emit canary or secret-like strings.
 - A generated solution can enter the deterministic calculation package only
@@ -99,8 +106,9 @@ Sandbox requirements:
   checks, static/security scans, human code review, and actuarial approval when
   the change affects calculation logic.
 
-These controls are recorded as benchmark metadata so a failed sandbox control is
-visible in the scorecard rather than treated as missing data.
+These controls are recorded in an immutable sandbox evaluation manifest linked
+to the API run manifest, so a failed sandbox control is visible in the scorecard
+rather than treated as missing data.
 
 ## 3. Repository layout
 

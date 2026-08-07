@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/benchmark-contracts/sandbox_policy.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "applies_to_pack_ids": {
+      "items": {"pattern": "^codegen-c[1-7]-v1$", "type": "string"},
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "configuration_state": {"enum": ["pre_freeze", "frozen"]},
+    "dependencies": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed_import_roots": {
+          "items": {"pattern": "^[A-Za-z_][A-Za-z0-9_]*$", "type": "string"},
+          "type": "array",
+          "uniqueItems": true
+        },
+        "runtime_installation_allowed": {"const": false}
+      },
+      "required": ["allowed_import_roots", "runtime_installation_allowed"],
+      "type": "object"
+    },
+    "isolation": {
+      "additionalProperties": false,
+      "properties": {
+        "backend": {"const": "docker_linux"},
+        "cap_drop_all": {"const": true},
+        "image_digest": {
+          "anyOf": [
+            {"pattern": "^sha256:[a-f0-9]{64}$", "type": "string"},
+            {"type": "null"}
+          ]
+        },
+        "image_reference": {"type": ["string", "null"]},
+        "level": {"const": "strong"},
+        "network": {"const": "none"},
+        "no_new_privileges": {"const": true},
+        "read_only_root": {"const": true},
+        "repository_mount_allowed": {"const": false},
+        "run_as_non_root": {"const": true}
+      },
+      "required": [
+        "backend", "level", "image_reference", "image_digest", "network",
+        "read_only_root", "cap_drop_all", "no_new_privileges",
+        "run_as_non_root", "repository_mount_allowed"
+      ],
+      "type": "object"
+    },
+    "policy_id": {"pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,119}$", "type": "string"},
+    "resource_limits": {
+      "additionalProperties": false,
+      "properties": {
+        "cpu_seconds": {"maximum": 600, "minimum": 1, "type": "integer"},
+        "disk_mb": {"maximum": 4096, "minimum": 16, "type": "integer"},
+        "file_count": {"maximum": 10000, "minimum": 1, "type": "integer"},
+        "memory_mb": {"maximum": 8192, "minimum": 64, "type": "integer"},
+        "output_bytes": {"maximum": 10000000, "minimum": 1024, "type": "integer"},
+        "pids": {"maximum": 256, "minimum": 1, "type": "integer"},
+        "wall_clock_seconds": {"maximum": 900, "minimum": 1, "type": "integer"}
+      },
+      "required": [
+        "wall_clock_seconds", "cpu_seconds", "memory_mb", "disk_mb",
+        "pids", "file_count", "output_bytes"
+      ],
+      "type": "object"
+    },
+    "schema_version": {"const": "1.0.0"},
+    "static_scan": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed_suffixes": {
+          "items": {"enum": [".py"]},
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "forbidden_calls": {
+          "items": {"pattern": "^[A-Za-z_][A-Za-z0-9_]*$", "type": "string"},
+          "type": "array",
+          "uniqueItems": true
+        },
+        "forbidden_import_roots": {
+          "items": {"pattern": "^[A-Za-z_][A-Za-z0-9_]*$", "type": "string"},
+          "type": "array",
+          "uniqueItems": true
+        },
+        "forbidden_text_patterns": {
+          "items": {"minLength": 1, "type": "string"},
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "allowed_suffixes", "forbidden_import_roots", "forbidden_calls",
+        "forbidden_text_patterns"
+      ],
+      "type": "object"
+    },
+    "test_gates": {
+      "additionalProperties": false,
+      "properties": {
+        "deterministic_repetitions": {"minimum": 2, "type": "integer"},
+        "exfiltration_suite_id": {"minLength": 1, "type": "string"},
+        "hidden_expected_values_mounted": {"const": false},
+        "hidden_protocol": {"const": "external_black_box"},
+        "hidden_suite_id": {"minLength": 1, "type": "string"},
+        "prompt_injection_suite_id": {"minLength": 1, "type": "string"},
+        "public_suite_id": {"minLength": 1, "type": "string"}
+      },
+      "required": [
+        "public_suite_id", "hidden_suite_id", "hidden_protocol",
+        "hidden_expected_values_mounted", "prompt_injection_suite_id",
+        "exfiltration_suite_id", "deterministic_repetitions"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version", "policy_id", "configuration_state", "applies_to_pack_ids",
+    "dependencies", "static_scan", "isolation", "resource_limits", "test_gates"
+  ],
+  "title": "Code-generation sandbox policy",
+  "type": "object"
+}

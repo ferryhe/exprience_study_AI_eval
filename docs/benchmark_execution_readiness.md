@@ -69,8 +69,34 @@ calculation package, each submission must pass a declared sandbox gate:
 
 Sandbox failure is a benchmark outcome and must remain visible in the scorecard.
 
+Implemented first phase:
+
+- API success is recorded as `response_contract_valid`, with acceptance scope
+  limited to transport and output-contract validation.
+- The exact extracted code submission is saved separately with its byte length
+  and SHA-256 so later evaluation does not reparse a provider response.
+- `evaluate-codegen` validates the immutable handoff, applies an import/call/text
+  static policy, materializes only statically approved files below `runs/`, and
+  writes a separate sandbox evaluation manifest.
+- The current C4 policy is `pre_freeze`. It never executes code, never falls back
+  to host execution, and always leaves `promotion_eligible=false`.
+
+Example first-phase evaluation:
+
+```text
+python scripts/run_benchmark.py evaluate-codegen --run-manifest runs/<run-id>/run_manifest.json
+```
+
+Not yet implemented: digest-pinned Docker/WSL2 execution, enforced runtime
+resource and network controls, public execution tests, external-black-box hidden
+actuarial tests, prompt-injection/exfiltration runtime suites, deterministic
+replay, and immutable human/actuarial promotion records. Therefore a valid API
+response or passed static scan is not evidence that generated code is safe or
+approved.
+
 ## Remaining production gates
 
 - The actual challenge starter repository, hidden evaluator, score rubric, reviewer protocol, deterministic JSON-to-HTML/PDF renderer, and production evidence bundle are not supplied by these smoke fixtures.
+- Freeze and verify a digest-pinned strong container backend before any generated code is executed; native host execution is prohibited as a fallback.
 - TTFT remains unavailable in the primary non-streaming lane. Compare round-trip and total elapsed time there; add a separately declared streaming measurement lane if TTFT is required.
 - Freeze the model list, price snapshot, prompt/input hashes, repetitions, cache lanes, time budget, and reviewer acceptance threshold before confirmatory execution.

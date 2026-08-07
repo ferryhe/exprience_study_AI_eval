@@ -8,6 +8,7 @@
     "cache_lane_policy": {"const": "observational_only_no_cache_state_guarantee"},
     "completed_at_utc": {"format": "date-time", "type": "string"},
     "cost": {"$ref": "#/$defs/cost"},
+    "extracted_output": {"$ref": "#/$defs/extractedOutput"},
     "metrics": {"$ref": "#/$defs/metrics"},
     "prompt": {"$ref": "#/$defs/prompt"},
     "provider": {"$ref": "#/$defs/provider"},
@@ -15,16 +16,16 @@
     "response": {"$ref": "#/$defs/response"},
     "run_id": {"pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,119}$", "type": "string"},
     "run_stage": {"enum": ["pilot", "confirmatory"]},
-    "schema_version": {"const": "1.1.0"},
+    "schema_version": {"const": "1.2.0"},
     "started_at_utc": {"format": "date-time", "type": "string"},
-    "status": {"enum": ["accepted", "failed"]},
+    "status": {"enum": ["response_contract_valid", "failed"]},
     "usage": {"$ref": "#/$defs/usage"},
     "usage_summary": {"$ref": "#/$defs/usageSummary"},
     "validation": {"$ref": "#/$defs/validation"}
   },
   "required": [
     "schema_version", "run_id", "run_stage", "status", "started_at_utc", "completed_at_utc",
-    "cache_lane", "cache_lane_policy", "prompt", "provider", "attempts", "response", "metrics", "usage", "cost",
+    "cache_lane", "cache_lane_policy", "prompt", "provider", "attempts", "response", "extracted_output", "metrics", "usage", "cost",
     "validation", "replay", "usage_summary"
   ],
   "title": "Direct API benchmark run manifest",
@@ -84,6 +85,17 @@
         "currency", "complete", "pricing_snapshot_id", "pricing_snapshot_sha256",
         "model_id_priced", "service_tier_priced", "components_usd", "total_usd", "known_subtotal_usd", "incomplete_attempt_count", "reason_code"
       ],
+      "type": "object"
+    },
+    "extractedOutput": {
+      "additionalProperties": false,
+      "properties": {
+        "byte_length": {"minimum": 0, "type": ["integer", "null"]},
+        "media_type": {"enum": ["application/json", null]},
+        "path": {"type": ["string", "null"]},
+        "sha256": {"$ref": "#/$defs/nullable_sha256"}
+      },
+      "required": ["path", "sha256", "byte_length", "media_type"],
       "type": "object"
     },
     "metrics": {
@@ -148,7 +160,7 @@
         },
         "raw_reasoning_stored": {"type": "boolean"},
         "runner_source_sha256": {"$ref": "#/$defs/sha256"},
-        "runner_version": {"const": "0.2.0"},
+        "runner_version": {"const": "0.3.0"},
         "source_git_commit": {"type": ["string", "null"]},
         "source_status_sha256": {"$ref": "#/$defs/sha256"},
         "source_tree_dirty": {"type": "boolean"}
@@ -218,11 +230,18 @@
     "validation": {
       "additionalProperties": false,
       "properties": {
+        "acceptance_scope": {"const": "transport_and_output_contract_only"},
         "failure_code": {"type": ["string", "null"]},
+        "model_declared_status": {
+          "enum": ["completed", "incomplete", "blocked", null]
+        },
         "model_output_sha256": {"$ref": "#/$defs/nullable_sha256"},
         "response_schema_valid": {"type": "boolean"}
       },
-      "required": ["response_schema_valid", "failure_code", "model_output_sha256"],
+      "required": [
+        "response_schema_valid", "failure_code", "model_output_sha256",
+        "acceptance_scope", "model_declared_status"
+      ],
       "type": "object"
     }
   }

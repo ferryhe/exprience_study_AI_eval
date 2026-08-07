@@ -22,6 +22,7 @@ from soa_benchmark.runner import (  # noqa: E402
     run_matrix,
     run_once,
 )
+from soa_benchmark.sandbox import SandboxError, evaluate_codegen  # noqa: E402
 
 
 def workspace_relative(value: str) -> str:
@@ -71,12 +72,29 @@ def parser() -> argparse.ArgumentParser:
     probe_command.add_argument("--output-root", default="runs")
     probe_command.add_argument("--probe-id")
     probe_command.add_argument("--pricing-snapshot")
+    evaluate_command = commands.add_parser("evaluate-codegen")
+    evaluate_command.add_argument("--run-manifest", required=True)
+    evaluate_command.add_argument(
+        "--sandbox-policy",
+        default="configs/sandbox/codegen-c4-v1.json",
+    )
+    evaluate_command.add_argument("--output-root", default="runs/sandbox_evaluations")
+    evaluate_command.add_argument("--evaluation-id")
     return result
 
 
 def main() -> int:
     args = parser().parse_args()
     try:
+        if args.command == "evaluate-codegen":
+            output = evaluate_codegen(
+                run_manifest_path=ROOT / workspace_relative(args.run_manifest),
+                sandbox_policy_path=workspace_relative(args.sandbox_policy),
+                output_root=ROOT / args.output_root,
+                evaluation_id=args.evaluation_id,
+            )
+            print(output.relative_to(ROOT).as_posix())
+            return 0
         if args.command == "probe":
             output = capability_probe(
                 provider_config_path=workspace_relative(args.provider_config),
@@ -129,7 +147,7 @@ def main() -> int:
         )
         print(manifest.relative_to(ROOT).as_posix())
         return 0
-    except (ContractError, PricingError, ProviderError, RunnerError) as exc:
+    except (ContractError, PricingError, ProviderError, RunnerError, SandboxError) as exc:
         print(f"FAIL: {exc}", file=sys.stderr)
         return 2
 

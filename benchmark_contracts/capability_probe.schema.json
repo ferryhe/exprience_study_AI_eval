@@ -125,7 +125,7 @@
         "python_version": {"type": "string"},
         "raw_reasoning_stored": {"type": "boolean"},
         "runner_source_sha256": {"$ref": "#/$defs/sha256"},
-        "runner_version": {"const": "0.2.0"},
+        "runner_version": {"const": "0.3.0"},
         "source_git_commit": {"type": ["string", "null"]},
         "source_status_sha256": {"$ref": "#/$defs/sha256"},
         "source_tree_dirty": {"type": "boolean"}

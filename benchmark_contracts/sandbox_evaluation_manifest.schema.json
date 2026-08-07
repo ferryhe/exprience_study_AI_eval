@@ -1,0 +1,207 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/benchmark-contracts/sandbox_evaluation_manifest.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "completed_at_utc": {"format": "date-time", "type": "string"},
+    "evaluation_id": {"pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,119}$", "type": "string"},
+    "execution": {"$ref": "#/$defs/execution"},
+    "failure_codes": {
+      "items": {"minLength": 1, "type": "string"},
+      "type": "array",
+      "uniqueItems": true
+    },
+    "machine_disposition": {"enum": ["failed", "blocked", "ready_for_human_review"]},
+    "materialization": {"$ref": "#/$defs/materialization"},
+    "policy": {"$ref": "#/$defs/policy"},
+    "promotion_eligible": {"const": false},
+    "schema_version": {"const": "1.0.0"},
+    "source": {"$ref": "#/$defs/source"},
+    "started_at_utc": {"format": "date-time", "type": "string"},
+    "static_scan": {"$ref": "#/$defs/staticScan"},
+    "test_gates": {"$ref": "#/$defs/testGates"}
+  },
+  "required": [
+    "schema_version", "evaluation_id", "started_at_utc", "completed_at_utc",
+    "source", "policy", "static_scan", "materialization", "execution",
+    "test_gates", "machine_disposition", "promotion_eligible", "failure_codes"
+  ],
+  "title": "Code-generation sandbox evaluation manifest",
+  "type": "object",
+  "$defs": {
+    "execution": {
+      "additionalProperties": false,
+      "properties": {
+        "attempted": {"type": "boolean"},
+        "backend_available": {"type": "boolean"},
+        "exit_code": {"type": ["integer", "null"]},
+        "failure_code": {"type": ["string", "null"]},
+        "isolation_evidence": {"$ref": "#/$defs/isolationEvidence"},
+        "limits": {"$ref": "#/$defs/resourceLimits"},
+        "observed_resources": {"$ref": "#/$defs/observedResources"},
+        "result": {"enum": ["not_run", "blocked", "passed", "failed"]},
+        "stderr_path": {"type": ["string", "null"]},
+        "stderr_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "stdout_path": {"type": ["string", "null"]},
+        "stdout_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "timed_out": {"type": "boolean"}
+      },
+      "required": [
+        "attempted", "backend_available", "result", "failure_code", "exit_code",
+        "timed_out", "stdout_path", "stdout_sha256", "stderr_path",
+        "stderr_sha256", "isolation_evidence", "limits", "observed_resources"
+      ],
+      "type": "object"
+    },
+    "finding": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {"minLength": 1, "type": "string"},
+        "line": {"minimum": 1, "type": ["integer", "null"]},
+        "message": {"minLength": 1, "type": "string"},
+        "path": {"minLength": 1, "type": "string"}
+      },
+      "required": ["code", "path", "line", "message"],
+      "type": "object"
+    },
+    "isolationEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "capabilities_dropped": {"type": ["boolean", "null"]},
+        "network_disabled": {"type": ["boolean", "null"]},
+        "no_new_privileges": {"type": ["boolean", "null"]},
+        "non_root_user": {"type": ["boolean", "null"]},
+        "read_only_root": {"type": ["boolean", "null"]},
+        "repository_not_mounted": {"type": ["boolean", "null"]},
+        "secrets_absent": {"type": ["boolean", "null"]}
+      },
+      "required": [
+        "network_disabled", "read_only_root", "capabilities_dropped",
+        "no_new_privileges", "non_root_user", "repository_not_mounted",
+        "secrets_absent"
+      ],
+      "type": "object"
+    },
+    "materialization": {
+      "additionalProperties": false,
+      "properties": {
+        "file_count": {"minimum": 0, "type": "integer"},
+        "materialized_source_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "root": {"type": ["string", "null"]},
+        "status": {"enum": ["not_run", "completed"]},
+        "total_bytes": {"minimum": 0, "type": "integer"}
+      },
+      "required": ["status", "root", "file_count", "total_bytes", "materialized_source_sha256"],
+      "type": "object"
+    },
+    "nullableNumber": {"type": ["number", "null"]},
+    "nullableSha256": {"anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]},
+    "observedResources": {
+      "additionalProperties": false,
+      "properties": {
+        "cpu_seconds": {"$ref": "#/$defs/nullableNumber"},
+        "disk_bytes": {"type": ["integer", "null"]},
+        "file_count": {"type": ["integer", "null"]},
+        "memory_peak_bytes": {"type": ["integer", "null"]},
+        "output_bytes": {"type": ["integer", "null"]},
+        "pids_peak": {"type": ["integer", "null"]},
+        "wall_clock_seconds": {"$ref": "#/$defs/nullableNumber"}
+      },
+      "required": [
+        "wall_clock_seconds", "cpu_seconds", "memory_peak_bytes", "disk_bytes",
+        "pids_peak", "file_count", "output_bytes"
+      ],
+      "type": "object"
+    },
+    "policy": {
+      "additionalProperties": false,
+      "properties": {
+        "configuration_state": {"enum": ["pre_freeze", "frozen"]},
+        "image_digest": {"type": ["string", "null"]},
+        "isolation_backend": {"const": "docker_linux"},
+        "isolation_level": {"const": "strong"},
+        "path": {"minLength": 1, "type": "string"},
+        "policy_id": {"minLength": 1, "type": "string"},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      },
+      "required": [
+        "path", "policy_id", "sha256", "configuration_state",
+        "isolation_backend", "isolation_level", "image_digest"
+      ],
+      "type": "object"
+    },
+    "resourceLimits": {
+      "additionalProperties": false,
+      "properties": {
+        "cpu_seconds": {"minimum": 1, "type": "integer"},
+        "disk_mb": {"minimum": 1, "type": "integer"},
+        "file_count": {"minimum": 1, "type": "integer"},
+        "memory_mb": {"minimum": 1, "type": "integer"},
+        "output_bytes": {"minimum": 1, "type": "integer"},
+        "pids": {"minimum": 1, "type": "integer"},
+        "wall_clock_seconds": {"minimum": 1, "type": "integer"}
+      },
+      "required": [
+        "wall_clock_seconds", "cpu_seconds", "memory_mb", "disk_mb",
+        "pids", "file_count", "output_bytes"
+      ],
+      "type": "object"
+    },
+    "sha256": {"pattern": "^[a-f0-9]{64}$", "type": "string"},
+    "source": {
+      "additionalProperties": false,
+      "properties": {
+        "acceptance_scope": {"const": "transport_and_output_contract_only"},
+        "api_status": {"const": "response_contract_valid"},
+        "extracted_submission_bytes": {"minimum": 1, "type": "integer"},
+        "extracted_submission_path": {"minLength": 1, "type": "string"},
+        "extracted_submission_sha256": {"$ref": "#/$defs/sha256"},
+        "pack_id": {"pattern": "^codegen-c[1-7]-v1$", "type": "string"},
+        "run_id": {"minLength": 1, "type": "string"},
+        "run_manifest_path": {"minLength": 1, "type": "string"},
+        "run_manifest_sha256": {"$ref": "#/$defs/sha256"}
+      },
+      "required": [
+        "run_manifest_path", "run_manifest_sha256", "run_id", "pack_id",
+        "api_status", "acceptance_scope", "extracted_submission_path",
+        "extracted_submission_sha256", "extracted_submission_bytes"
+      ],
+      "type": "object"
+    },
+    "staticScan": {
+      "additionalProperties": false,
+      "properties": {
+        "findings": {"items": {"$ref": "#/$defs/finding"}, "type": "array"},
+        "scanned_file_count": {"minimum": 0, "type": "integer"},
+        "status": {"enum": ["passed", "failed"]}
+      },
+      "required": ["status", "scanned_file_count", "findings"],
+      "type": "object"
+    },
+    "testGate": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {"enum": ["not_run", "passed", "failed"]},
+        "suite_id": {"minLength": 1, "type": "string"}
+      },
+      "required": ["suite_id", "status"],
+      "type": "object"
+    },
+    "testGates": {
+      "additionalProperties": false,
+      "properties": {
+        "exfiltration": {"$ref": "#/$defs/testGate"},
+        "hidden_actuarial": {"$ref": "#/$defs/testGate"},
+        "hidden_protocol": {"const": "external_black_box"},
+        "prompt_injection": {"$ref": "#/$defs/testGate"},
+        "public": {"$ref": "#/$defs/testGate"},
+        "reproducibility": {"$ref": "#/$defs/testGate"}
+      },
+      "required": [
+        "public", "hidden_actuarial", "hidden_protocol", "prompt_injection",
+        "exfiltration", "reproducibility"
+      ],
+      "type": "object"
+    }
+  }
+}
