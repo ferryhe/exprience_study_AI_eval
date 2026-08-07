@@ -24,6 +24,7 @@ OFFICIAL_PRICE_DOMAINS = {
     "anthropic": ("anthropic.com",),
     "kimi": ("moonshot.ai", "moonshot.cn"),
     "deepseek": ("deepseek.com",),
+    "minimax": ("minimax.io", "minimaxi.com"),
 }
 
 

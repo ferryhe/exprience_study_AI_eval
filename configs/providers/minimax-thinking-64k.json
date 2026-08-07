@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0.0",
+  "configuration_state": "frozen",
+  "benchmark_alias": "minimax-m3-thinking-64k",
+  "benchmark_lane": "sensitivity",
+  "provider": "minimax",
+  "api_style": "messages",
+  "base_url": "https://api.minimaxi.com/anthropic",
+  "endpoint": "/v1/messages",
+  "api_key_env": "MINIMAX_API_KEY",
+  "requested_model_id": "MiniMax-M3",
+  "effective_model_id": "MiniMax-M3",
+  "effective_model_reason_code": "capability_probe_confirmed",
+  "version_semantics": "pinned_exact",
+  "capability_probe_date": "2026-08-07",
+  "reasoning_profile": "standardized_high",
+  "native_reasoning_settings": {
+    "type": "adaptive"
+  },
+  "primary_response_mode": "json_only_local_validation",
+  "max_output_tokens": 65536,
+  "wall_clock_timeout_seconds": 900,
+  "max_turns": 1,
+  "tools_enabled": false,
+  "store_response": false,
+  "cache_policy": "observe_and_log",
+  "service_tier": "standard",
+  "transport_retry_statuses": [408, 409, 429, 500, 502, 503, 504],
+  "transport_retry_errors": ["timeout", "connection_reset", "remote_disconnected"],
+  "max_transport_attempts": 3
+}

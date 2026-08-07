@@ -27,13 +27,13 @@ probe 返回并确认 effective model ID 后，才能把某条 route 描述为�
 截至当前实现状态：
 
 - 基线 commit `f4b0ef8` 已推送到 `origin/main`。
-- sandbox 第一阶段改动在本地工作树中，正式 confirmatory run 前必须审核、提交并保持工作树干净。
+- frozen Docker sandbox 改动在本地工作树中，正式 confirmatory run 前必须审核、提交并保持工作树干净。
 - prompt library、provider adapter、API runner、token/cost ledger、synthetic C4 fixture 和 small report fixture 已存在。
 - 四个 provider config 均为 `configuration_state=pre_probe`。
 - `configs/pricing/pricing_manifest.json` 尚未注册正式价格快照。
 - 用户已说明 `.env.local` 中放入了三个 key；程序和本手册不读取或显示 key 值。四模型正式比较必须确认第四条 route 的凭证。
-- C4 sandbox policy 为 `pre_freeze`，只能静态扫描和安全物化，不能执行生成代码。
-- 本机当前没有可用 Docker CLI，WSL2 强隔离环境也未就绪。
+- C4 sandbox policy 已冻结到可复建的 digest-pinned Docker image。
+- 本机 Docker Desktop/WSL2 Linux backend 已验证，C4 动态 gate 可执行且不回退到宿主机。
 - 完整 SOA data-to-evidence calculation package、生产 evidence bundle、JSON-to-HTML/PDF renderer、hidden actuarial evaluator、人工评分工具和 promotion workflow 尚未完成。
 
 因此当前能够完成的是：离线公平性验证、capability probe、冻结 route 与价格、API
@@ -71,7 +71,7 @@ API runner 可以联网，但不执行模型生成代码。代码 sandbox 不持
 | 4 | 运行 capability probe | 验证 route、凭证、model ID 和参数 | 每条 route 返回精确 `{"ok":true}` | 可用性、returned model、probe 延迟/token/重试 |
 | 5 | 冻结 provider config 和价格 | 让费用和模型身份可解释 | config 为 `frozen`，价格文件已注册 | 可比较的有效模型和 USD 计价基础 |
 | 6 | 单条 route smoke | 小成本验证真实请求链路 | C4 和 report 各产生 schema-valid output | 首次成功、token、费用、延迟、失败原因 |
-| 7 | C4 静态 sandbox gate | 拦截网络、子进程、secret 读取等代码 | 恶意代码失败；安全代码当前为 `blocked` | static pass rate、finding 类型 |
+| 7 | C4 sandbox gate | 静态拦截危险代码并在强隔离容器中测试 | 恶意代码失败；全部机器 gate 通过后进入人工复核 | static/dynamic pass rate、finding 类型 |
 | 8 | 四 route pilot matrix | 观察稳定性和成本区间 | 每条 route 获得相同次数输出 | 成功率、延迟、token、费用、重复性 |
 | 9 | 报告质量评估 | 比较数字、证据、洞察和治理质量 | 盲审评分与接受/修订决定 | report quality panel、repair time |
 | 10 | 强隔离 code evaluation | 比较生成代码的正确性和安全性 | public/hidden/replay 全部有结果 | code quality panel、sandbox failure rate |
@@ -397,7 +397,7 @@ python scripts/run_benchmark.py run --pack-id report-v1 --input-manifest fixture
 
 `response_contract_valid` 不是 reviewer acceptance；只能证明 API 返回结构可以进入下一阶段。
 
-## 13. 步骤 9：运行 C4 第一阶段 sandbox gate
+## 13. 步骤 9：运行 C4 sandbox gate
 
 ### 操作
 
@@ -409,23 +409,25 @@ python scripts/run_benchmark.py evaluate-codegen --run-manifest runs/smoke-c4-op
 
 ### 目的
 
-验证 extracted submission 未被篡改，并在不执行代码的情况下检测：
+验证 extracted submission 未被篡改，先执行静态检测，再把通过的代码放入冻结的强隔离容器：
 
 - 非 allowlist import；
 - 网络、subprocess、动态执行和文件 I/O；
 - `.env`、API key、gold/canary 探测；
 - 非允许文件路径、编码和大小；
 - model-declared `incomplete` 或 `blocked` 状态。
+- public/外部黑盒精算、prompt-injection、exfiltration-isolation 和确定性 replay gate。
 
-### 当前期待结果
+### 期待结果
 
 - 恶意或不合规代码：`static_scan.status=failed`、`machine_disposition=failed`、不创建 subject tree；
-- 静态安全代码：完成 materialization，但因 policy 为 `pre_freeze` 而得到 `machine_disposition=blocked`；
-- `execution.attempted=false`；
+- 缺少 Docker backend 或冻结镜像：`machine_disposition=blocked`，绝不在宿主机执行；
+- 静态安全且全部动态 gate 通过：`execution.result=passed`、`machine_disposition=ready_for_human_review`；
+- 动态 gate 失败：`machine_disposition=failed` 并保留 failure code；
 - `promotion_eligible=false`。
 
-当前安全代码得到 `blocked` 是项目基础设施状态，不是模型失败。静态扫描失败则属于模型输出结果，
-必须计入 scorecard。
+基础设施缺失导致的 `blocked` 不是模型失败。静态或动态 gate 失败属于模型输出结果，必须计入
+scorecard。
 
 ### 停止条件
 
@@ -434,13 +436,10 @@ python scripts/run_benchmark.py evaluate-codegen --run-manifest runs/smoke-c4-op
 
 ### 比较结果
 
-当前可比较：
+可比较：
 
-| Route | Static pass | Finding count | Finding codes | Materialized | Machine disposition |
-|---|---:|---:|---|---:|---|
-
-当前不可比较：代码运行成功率、public/hidden test、资源消耗和 actuarial correctness；这些字段
-必须显示 `not_run`，不能填零。
+| Route | Static pass | Public | Hidden | Injection | Exfiltration isolation | Replay | Machine disposition |
+|---|---:|---:|---:|---:|---:|---:|---|
 
 ## 14. 步骤 10：运行四 route pilot matrix
 
@@ -473,7 +472,7 @@ provider configs 未显式传入时，runner 使用登记的四条 route。matri
 - 每条 route 有 4 个 run manifest，共 16 个 run；
 - 执行位置循环均衡；
 - 所有 transport attempt、重试成本和失败均保留；
-- C4 run 随后逐一进入第一阶段 sandbox gate。
+- C4 run 随后逐一进入 frozen Docker sandbox gate。
 
 ### 停止条件
 
@@ -543,18 +542,26 @@ renderer 尚未实现。在这些工具完成前，使用相同的 reviewer work
 unsupported claim 必须为 0、所有关键 limitation 必须覆盖。加权总分只用于导航，不能抵消
 重大数值错误。
 
-## 16. 步骤 12：解锁强隔离 code evaluation
+## 16. 步骤 12：运行强隔离 code evaluation
 
-本步骤当前尚不可执行。完成以下条件前，不得运行任何生成代码：
+### 操作
 
-1. 安装并验证 Docker Desktop/WSL2 strong backend。
-2. 使用 digest-pinned image，并把 C4 policy 从 `pre_freeze` 改为 `frozen`。
+先重建并核对冻结镜像：
+
+```text
+python scripts/build_codegen_sandbox.py
+```
+
+摘要一致后，按步骤 9 运行 `evaluate-codegen`。当前实现满足以下执行边界：
+
+1. Docker Desktop/WSL2 strong backend 已验证。
+2. 使用 digest-pinned image，C4 policy 为 `frozen`。
 3. 固定 `--network=none`、read-only root、non-root user、cap-drop、no-new-privileges、PID、CPU、memory、disk、file 和 output limits。
 4. public tests 在 subject 容器内运行。
 5. hidden actuarial expected values 保留在父 evaluator，使用 external-black-box protocol；不得把 hidden test 源码挂入 subject 容器。
-6. 运行 prompt-injection、canary、DNS/HTTP/stdout exfiltration、timeout、memory、process、file 和 output-bomb tests。
+6. 当前运行 prompt-injection-as-data 与 exfiltration-isolation 检查；更完整的 DNS/HTTP、timeout、memory、process、file 和 output-bomb adversarial suite 仍是后续加固项。
 7. 同一 submission 至少运行两次，比较结果和 artifact hash。
-8. 新增 immutable human review 与 actuarial promotion record。
+8. immutable human review 与 actuarial promotion record 尚待实现，因此机器通过后仍保持 `promotion_eligible=false`。
 
 ### 目的
 
@@ -692,7 +699,7 @@ outlier、失败或发生 transport retry 的 run。
 - transport retry 的所有 attempt 都计入时间、token 和费用；不能只计最后一次。
 - provider API failure 是 route 结果，不能静默重跑并删除失败记录。
 - schema repair、人工修复和 continuation 必须进入独立 repair lane；原始 first-run 结果保持不变。
-- static sandbox `blocked` 如果由未完成基础设施造成，不计为模型失败；static policy finding 则计为模型失败。
+- sandbox `blocked` 如果由缺少 Docker backend/冻结镜像造成，不计为模型失败；static 或 dynamic gate finding 则计为模型失败。
 - material numeric error、secret access、data exfiltration、hidden-test probing 或不安全 dependency 行为是硬失败，不能由文风或低成本分数抵消。
 - weighted score 是摘要；原始正确率、失败率、费用、延迟和 reviewer decision 是主要证据。
 
@@ -700,13 +707,13 @@ outlier、失败或发生 transport retry 的 run。
 
 按当前仓库状态，建议下一次实际操作顺序为：
 
-1. 审核并提交本地 sandbox 第一阶段改动，使工作树回到干净状态。
+1. 审核并提交 frozen Docker sandbox 改动，使工作树回到干净状态。
 2. 重新运行全部离线验收。
 3. 确认第四个 provider key 是否已经配置。
 4. 明确授权小额付费后，逐条执行四个 capability probe。
 5. 根据真实返回结果冻结 effective model ID。
 6. 从官方来源建立并注册价格快照。
 7. 每条 route 各运行一个 C4 和一个 small report smoke。
-8. 对全部 C4 smoke 执行第一阶段 sandbox gate。
+8. 对全部 C4 smoke 执行 frozen Docker sandbox gate。
 9. 查看实际 token/费用后批准或缩小 4-repetition pilot matrix。
-10. 在 Docker/WSL strong sandbox、production evidence bundle 和自动 evaluator 完成前，不启动正式 confirmatory benchmark。
+10. 在 production evidence bundle、报告自动 evaluator 和人工/精算 promotion record 完成前，不启动正式 confirmatory benchmark。

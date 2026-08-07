@@ -24,7 +24,7 @@
         "alias": {"type": "string"},
         "config_sha256": {"$ref": "#/$defs/sha256"},
         "credential_source": {"enum": ["env_file", "process_environment"]},
-        "provider": {"enum": ["openai", "anthropic", "kimi", "deepseek"]},
+        "provider": {"enum": ["openai", "anthropic", "kimi", "deepseek", "minimax"]},
         "requested_model_id": {"type": "string"},
         "requested_service_tier": {"type": "string"},
         "returned_model_id": {"type": ["string", "null"]},

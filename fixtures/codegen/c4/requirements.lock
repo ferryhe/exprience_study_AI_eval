@@ -1,1 +1,1 @@
-# C4 smoke fixture uses only the Python standard library.
+polars==1.40.1

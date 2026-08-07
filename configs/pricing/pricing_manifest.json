@@ -1,4 +1,10 @@
 {
   "schema_version": "1.0.0",
-  "snapshots": []
+  "snapshots": [
+    {
+      "path": "configs/pricing/minimax-m3-standard-2026-08-07.json",
+      "byte_length": 641,
+      "sha256": "05086612609dcfedacb6a24087d09d215415407eb68186c47b44518923653287"
+    }
+  ]
 }

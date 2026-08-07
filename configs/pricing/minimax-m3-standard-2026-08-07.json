@@ -1,0 +1,21 @@
+{
+  "captured_at_utc": "2026-08-07T03:59:05.055Z",
+  "currency": "USD",
+  "models": [
+    {
+      "model_id": "MiniMax-M3",
+      "provider": "minimax",
+      "effective_at_utc": "2026-08-07T03:59:05.055Z",
+      "service_tier": "standard",
+      "source_url": "https://platform.minimax.io/subscribe/token-plan?tab=api-enterprise",
+      "rates": {
+        "cache_read_input_usd_per_million": "0.06",
+        "cache_write_input_usd_per_million": null,
+        "output_usd_per_million": "1.2",
+        "uncached_input_usd_per_million": "0.3"
+      }
+    }
+  ],
+  "schema_version": "1.0.0",
+  "snapshot_id": "minimax-m3-standard-2026-08-07"
+}

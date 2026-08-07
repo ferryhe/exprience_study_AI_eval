@@ -2,15 +2,19 @@
   "applies_to_pack_ids": [
     "codegen-c4-v1"
   ],
-  "configuration_state": "pre_freeze",
+  "configuration_state": "frozen",
   "dependencies": {
     "allowed_import_roots": [
+      "__future__",
       "collections",
       "dataclasses",
       "decimal",
       "functools",
+      "hashlib",
       "itertools",
+      "json",
       "math",
+      "polars",
       "soa_experience",
       "statistics",
       "typing"
@@ -20,8 +24,8 @@
   "isolation": {
     "backend": "docker_linux",
     "cap_drop_all": true,
-    "image_digest": null,
-    "image_reference": null,
+    "image_digest": "sha256:7bdec9d17b3a8148f8459d34ada8587694f88815556b5d701e23f8c4283f8d7c",
+    "image_reference": "soa-benchmark-codegen-c4:1.0.0@sha256:7bdec9d17b3a8148f8459d34ada8587694f88815556b5d701e23f8c4283f8d7c",
     "level": "strong",
     "network": "none",
     "no_new_privileges": true,
