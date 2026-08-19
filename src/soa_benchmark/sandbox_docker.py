@@ -588,9 +588,10 @@ def run_docker_evaluation(
     for replay in range(1, policy["test_gates"]["deterministic_repetitions"]):
         requests.append((f"replay-{replay + 1}", _request(_PUBLIC_ROWS, ["product"])))
 
+    entropy = f"{os.getpid()}:{time.monotonic_ns()}"
     runs: list[_ContainerRun] = []
     for index, (_, payload) in enumerate(requests, start=1):
-        suffix = hashlib.sha256(f"{evaluation_id}:{index}".encode()).hexdigest()[:12]
+        suffix = hashlib.sha256(f"{evaluation_id}:{index}:{entropy}".encode()).hexdigest()[:12]
         runs.append(
             _run_container(
                 docker=docker,
