@@ -1,5 +1,6 @@
 {
   "period": "2018-2019",
+  "population_id": "Total",
   "publication_rounding": "round only in the publication layer",
   "rows": [
     {

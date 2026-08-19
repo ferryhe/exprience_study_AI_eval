@@ -32,6 +32,20 @@
       "purpose": "provider_config"
     },
     {
+      "path": "configs/providers/minimax-thinking-64k.json",
+      "media_type": "application/json",
+      "byte_length": 1088,
+      "sha256": "65a7e6fec7f963e21c4c4a6df53c2243b7cb2b20fa8523759b2fbcde902ddf2b",
+      "purpose": "provider_config"
+    },
+    {
+      "path": "configs/providers/minimax.json",
+      "media_type": "application/json",
+      "byte_length": 1040,
+      "sha256": "44005070e6effc75b0d241f600547dfacdf0175fd1c4e66cf844e40423a365cb",
+      "purpose": "provider_config"
+    },
+    {
       "path": "configs/providers/openai.json",
       "media_type": "application/json",
       "byte_length": 976,

@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from soa_benchmark.billing import (  # noqa: E402
+    OFFICIAL_PRICE_DOMAINS,
     PricingError,
     calculate_cost,
     load_live_pricing_snapshot,
@@ -33,10 +34,13 @@ from soa_benchmark.providers import (  # noqa: E402
     ProviderError,
     ProviderConfig,
     build_payload,
+    extract_text,
     load_provider_config,
     normalize_usage,
+    request_headers,
 )
 from soa_benchmark.runner import (  # noqa: E402
+    DEFAULT_PROVIDER_CONFIGS,
     RunnerError,
     NoRedirectHandler,
     PROBE_MAX_OUTPUT_TOKENS,
@@ -95,6 +99,10 @@ class CanonicalInputTests(unittest.TestCase):
         codegen = render_prompt("codegen-c4-v1", "fixtures/codegen/c4/input_manifest.json")
         report = render_prompt("report-v1", "fixtures/report/small_evidence/input_manifest.json")
         self.assertNotIn("evaluator_only", codegen.user)
+        self.assertIn("class ExperienceInput", codegen.user)
+        self.assertIn('"population_id": "Total"', codegen.user)
+        self.assertIn("polars==1.40.1", codegen.user)
+        self.assertIn("does not block grouped count or amount A/E calculations", codegen.user)
         self.assertNotEqual(codegen.model_visible_sha256, report.model_visible_sha256)
 
     def test_prompt_manifest_cannot_add_gold_component(self) -> None:
@@ -125,6 +133,82 @@ class ProviderContractTests(unittest.TestCase):
         config = load_provider_config("configs/providers/anthropic.json")
         payload = build_payload(config, self.prompt)
         self.assertEqual(payload["output_config"], {"effort": "high"})
+
+    def test_minimax_anthropic_compatible_contract(self) -> None:
+        config = load_provider_config("configs/providers/minimax.json")
+        payload = build_payload(config, self.prompt)
+        self.assertEqual(payload["model"], "MiniMax-M3")
+        self.assertEqual(payload["thinking"], {"type": "disabled"})
+        self.assertEqual(payload["service_tier"], "standard")
+        self.assertNotIn("output_config", payload)
+        self.assertEqual(
+            request_headers(config, "secret"),
+            {
+                "Content-Type": "application/json",
+                "User-Agent": "soa-experience-ai-eval/0.1",
+                "x-api-key": "secret",
+                "anthropic-version": "2023-06-01",
+            },
+        )
+        response = {
+            "content": [
+                {"type": "thinking", "thinking": "private reasoning"},
+                {"type": "text", "text": "result"},
+            ],
+            "usage": {
+                "input_tokens": 70,
+                "cache_read_input_tokens": 20,
+                "cache_creation_input_tokens": 10,
+                "output_tokens": 40,
+                "output_tokens_details": {"thinking_tokens": 35},
+            },
+        }
+        self.assertEqual(extract_text(config, response), "result")
+        usage = normalize_usage(config, response)
+        self.assertEqual(usage["input_tokens"], 100)
+        self.assertEqual(usage["uncached_input_tokens"], 70)
+        self.assertEqual(usage["cache_read_input_tokens"], 20)
+        self.assertEqual(usage["cache_write_input_tokens"], 10)
+        self.assertEqual(usage["reasoning_tokens"], 35)
+        self.assertTrue(usage["integrity_valid"])
+        usage_without_details = normalize_usage(config, {
+            "usage": {
+                "input_tokens": 70,
+                "cache_read_input_tokens": 20,
+                "cache_creation_input_tokens": 10,
+                "output_tokens": 40,
+            }
+        })
+        self.assertIsNone(usage_without_details["reasoning_tokens"])
+        self.assertTrue(usage_without_details["integrity_valid"])
+
+    def test_minimax_thinking_64k_is_an_independent_sensitivity_lane(self) -> None:
+        config = load_provider_config("configs/providers/minimax-thinking-64k.json")
+        payload = build_payload(config, self.prompt)
+        self.assertEqual(config.alias, "minimax-m3-thinking-64k")
+        self.assertEqual(config.data["benchmark_lane"], "sensitivity")
+        self.assertEqual(payload["thinking"], {"type": "adaptive"})
+        self.assertEqual(payload["max_tokens"], 65536)
+        self.assertEqual(payload["model"], "MiniMax-M3")
+        self.assertEqual(payload["service_tier"], "standard")
+        self.assertNotIn("configs/providers/minimax-thinking-64k.json", DEFAULT_PROVIDER_CONFIGS)
+
+    def test_minimax_is_allowed_by_all_provider_contract_enums(self) -> None:
+        schemas = {
+            name: json.loads((ROOT / "benchmark_contracts" / name).read_text(encoding="utf-8"))
+            for name in (
+                "capability_probe.schema.json",
+                "batch_manifest.schema.json",
+                "pricing_snapshot.schema.json",
+            )
+        }
+        provider_enums = (
+            schemas["capability_probe.schema.json"]["properties"]["provider"]["properties"]["provider"]["enum"],
+            schemas["batch_manifest.schema.json"]["$defs"]["preflight"]["properties"]["providers"]["items"]["properties"]["provider"]["enum"],
+            schemas["pricing_snapshot.schema.json"]["properties"]["models"]["items"]["properties"]["provider"]["enum"],
+        )
+        for providers in provider_enums:
+            self.assertIn("minimax", providers)
 
     def test_provider_base_url_cannot_redirect_a_key(self) -> None:
         original = json.loads((ROOT / "configs/providers/openai.json").read_text(encoding="utf-8"))
@@ -257,6 +341,32 @@ class BillingAndRunnerTests(unittest.TestCase):
         with self.assertRaises(PricingError):
             load_live_pricing_snapshot("fixtures/pricing/synthetic_pricing_snapshot.json")
 
+    def test_minimax_live_price_snapshot_and_missing_cache_write_rate(self) -> None:
+        self.assertEqual(OFFICIAL_PRICE_DOMAINS["minimax"], ("minimax.io", "minimaxi.com"))
+        snapshot = load_live_pricing_snapshot(
+            "configs/pricing/minimax-m3-standard-2026-08-07.json"
+        )
+        usage = {
+            "input_tokens": 2_000_000,
+            "uncached_input_tokens": 1_000_000,
+            "cache_read_input_tokens": 1_000_000,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1_000_000,
+            "reasoning_tokens": None,
+            "total_tokens": 3_000_000,
+            "integrity_valid": True,
+            "integrity_failure_code": None,
+        }
+        cost = calculate_cost(usage, snapshot, "minimax", "MiniMax-M3", "standard")
+        self.assertTrue(cost["complete"])
+        self.assertEqual(cost["total_usd"], "1.560000000000")
+        cache_write_usage = dict(usage, cache_write_input_tokens=1)
+        cache_write_cost = calculate_cost(
+            cache_write_usage, snapshot, "minimax", "MiniMax-M3", "standard"
+        )
+        self.assertFalse(cache_write_cost["complete"])
+        self.assertEqual(cache_write_cost["reason_code"], "price_component_missing")
+
     def test_env_file_overrides_process_environment_without_exposing_value(self) -> None:
         (ROOT / "runs").mkdir(exist_ok=True)
         with tempfile.TemporaryDirectory(dir=ROOT / "runs") as directory:
@@ -345,9 +455,13 @@ class BillingAndRunnerTests(unittest.TestCase):
     def test_raw_reasoning_detection_is_provider_specific(self) -> None:
         openai = load_provider_config("configs/providers/openai.json")
         deepseek = load_provider_config("configs/providers/deepseek.json")
+        minimax = load_provider_config("configs/providers/minimax.json")
         self.assertFalse(_response_has_raw_reasoning(openai, {"reasoning": {"effort": "high"}}))
         self.assertTrue(_response_has_raw_reasoning(deepseek, {
             "choices": [{"message": {"reasoning_content": "retained reasoning"}}]
+        }))
+        self.assertTrue(_response_has_raw_reasoning(minimax, {
+            "content": [{"type": "thinking", "thinking": "retained reasoning"}]
         }))
 
     def test_matrix_requires_position_balanced_repetitions(self) -> None:
@@ -360,6 +474,7 @@ class BillingAndRunnerTests(unittest.TestCase):
                     "configs/providers/anthropic.json",
                     "configs/providers/kimi.json",
                     "configs/providers/deepseek.json",
+                    "configs/providers/minimax.json",
                 ),
                 ROOT / ".env.local",
                 ROOT / "runs",

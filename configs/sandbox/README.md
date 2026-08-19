@@ -1,9 +1,12 @@
 # Code-generation sandbox policies
 
 Policies in this directory are public, versioned execution contracts. A policy
-in `pre_freeze` state permits materialization and static scanning only. It must
-not execute generated code or support confirmatory scoring.
+in `pre_freeze` state permits materialization and static scanning only. A
+`frozen` policy may execute only through its declared digest-pinned Docker
+image; native host execution is never a fallback.
 
-Freezing a policy requires a digest-pinned container image and verified Docker
-or WSL2 isolation evidence. Native host execution is never an automatic
-fallback.
+Rebuild and verify the C4 image with:
+
+```text
+python scripts/build_codegen_sandbox.py
+```

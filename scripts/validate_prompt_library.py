@@ -22,7 +22,7 @@ DENIED_ROOTS = (
     "runs/",
 )
 PROVIDER_IDENTITIES = re.compile(
-    r"(?i)\b(openai|anthropic|deepseek|kimi|moonshot|claude|gpt-[0-9])\b"
+    r"(?i)\b(openai|anthropic|minimax|deepseek|kimi|moonshot|claude|gpt-[0-9])\b"
 )
 WINDOWS_DEVICE_NAMES = {
     "CON",
@@ -123,7 +123,7 @@ def provider_payload(
                 {"role": "user", "content": [{"type": "input_text", "text": user}]},
             ],
         }
-    if provider == "anthropic":
+    if provider in {"anthropic", "minimax"}:
         return {
             "model": common["model"],
             "max_tokens": common["max_output_tokens"],
@@ -145,7 +145,7 @@ def extract_model_visible(provider: str, payload: dict[str, Any]) -> tuple[str, 
             payload["input"][0]["content"][0]["text"],
             payload["input"][1]["content"][0]["text"],
         )
-    if provider == "anthropic":
+    if provider in {"anthropic", "minimax"}:
         return payload["system"], payload["messages"][0]["content"]
     return payload["messages"][0]["content"], payload["messages"][1]["content"]
 
@@ -264,6 +264,7 @@ def validate_packs(manifest: dict[str, Any], artifacts: dict[str, dict[str, Any]
             parse_json("configs/providers/anthropic.json"),
             parse_json("configs/providers/kimi.json"),
             parse_json("configs/providers/deepseek.json"),
+            parse_json("configs/providers/minimax.json"),
         )
     }
 
@@ -343,11 +344,35 @@ def validate_provider_state(config: dict[str, Any]) -> None:
 
 
 def validate_provider_configs() -> None:
-    configs = [parse_json(f"configs/providers/{name}.json") for name in ("openai", "anthropic", "kimi", "deepseek")]
+    configs = [
+        parse_json(f"configs/providers/{name}.json")
+        for name in ("openai", "anthropic", "kimi", "deepseek", "minimax")
+    ]
     aliases = {config["benchmark_alias"] for config in configs}
-    if aliases != {"gpt-5.6-sol", "claude-opus-5", "kimi-k3", "deepseek-v4-pro"}:
+    if aliases != {"gpt-5.6-sol", "claude-opus-5", "kimi-k3", "deepseek-v4-pro", "minimax-m3"}:
         raise ValidationError("provider alias set differs from the approved matrix")
-    for config in configs:
+    sensitivity = parse_json("configs/providers/minimax-thinking-64k.json")
+    minimax = next(config for config in configs if config["provider"] == "minimax")
+    if (
+        sensitivity.get("benchmark_alias") != "minimax-m3-thinking-64k"
+        or sensitivity.get("benchmark_lane") != "sensitivity"
+        or sensitivity.get("native_reasoning_settings") != {"type": "adaptive"}
+        or sensitivity.get("max_output_tokens") != 65536
+    ):
+        raise ValidationError("MiniMax thinking sensitivity lane is inconsistent")
+    for field in (
+        "provider",
+        "api_style",
+        "base_url",
+        "endpoint",
+        "api_key_env",
+        "requested_model_id",
+        "effective_model_id",
+        "service_tier",
+    ):
+        if sensitivity.get(field) != minimax.get(field):
+            raise ValidationError(f"MiniMax sensitivity route/model mismatch: {field}")
+    for config in [*configs, sensitivity]:
         validate_provider_state(config)
         if not config["api_key_env"].endswith("_API_KEY"):
             raise ValidationError(f"unexpected API key environment name: {config['provider']}")
@@ -463,7 +488,7 @@ def main() -> int:
 
     print(
         "PASS: prompt library is internally consistent "
-        f"({len(artifacts)} artifacts, {len(manifest['packs'])} packs, 4 mock adapters)"
+        f"({len(artifacts)} artifacts, {len(manifest['packs'])} packs, 5 mock adapters)"
     )
     return 0
 

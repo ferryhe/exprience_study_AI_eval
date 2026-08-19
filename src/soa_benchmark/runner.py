@@ -61,6 +61,7 @@ DEFAULT_PROVIDER_CONFIGS = (
     "configs/providers/anthropic.json",
     "configs/providers/kimi.json",
     "configs/providers/deepseek.json",
+    "configs/providers/minimax.json",
 )
 TOKEN_FIELDS = (
     "input_tokens",
@@ -405,7 +406,7 @@ def _request_id(headers: dict[str, str], response: dict[str, Any] | None) -> str
 
 
 def _finish_reason(config: ProviderConfig, response: dict[str, Any]) -> str | None:
-    if config.provider == "anthropic":
+    if config.provider in {"anthropic", "minimax"}:
         value = response.get("stop_reason")
     elif config.provider in {"kimi", "deepseek"}:
         choices = response.get("choices") or []
@@ -635,7 +636,7 @@ def _source_identity() -> dict[str, Any]:
 
 
 def _response_has_raw_reasoning(config: ProviderConfig, response: dict[str, Any]) -> bool:
-    if config.provider == "anthropic":
+    if config.provider in {"anthropic", "minimax"}:
         content = response.get("content")
         return isinstance(content, list) and any(
             isinstance(item, dict)

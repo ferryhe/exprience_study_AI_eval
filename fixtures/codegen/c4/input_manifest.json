@@ -2,34 +2,34 @@
   "artifacts": [
     {
       "approved_for_model": true,
-      "byte_length": 993,
+      "byte_length": 1210,
       "media_type": "text/x-python",
       "path": "fixtures/codegen/c4/starter/src/soa_experience/calculations/interfaces.py",
-      "sha256": "b60156a2726df800ad2ed3399e9915cd2e01b2b9dc7af8ded709f82a6ee586f8",
+      "sha256": "55128ea09080d1c5bc35fd098cc0dadc4bddeadd01cbaefa9409a801d1704375",
       "source_kind": "starter_repository"
     },
     {
       "approved_for_model": true,
-      "byte_length": 1007,
+      "byte_length": 1035,
       "media_type": "application/json",
       "path": "fixtures/codegen/c4/ae_small.json",
-      "sha256": "196a5e2bc2ec3756733d67639b7d0b6b0fd93241c60fd19e0f2cbe3f0497ea57",
+      "sha256": "c2a0a7759d43973610534fbb7fb5463762393389f72f9601bd21e51c29dc4ec1",
       "source_kind": "synthetic_fixture"
     },
     {
       "approved_for_model": true,
-      "byte_length": 772,
+      "byte_length": 1151,
       "media_type": "text/markdown",
       "path": "fixtures/codegen/c4/public_contract.md",
-      "sha256": "cf1a33cb7c19c891a19f1164fce4436c4e8e6546c49c6a424c6b7a707699d33c",
+      "sha256": "b418aa054438623a91b5d8e15a86134517a1d16ce8599f302994d8a1bb99097d",
       "source_kind": "public_interface"
     },
     {
       "approved_for_model": true,
-      "byte_length": 58,
+      "byte_length": 15,
       "media_type": "text/plain",
       "path": "fixtures/codegen/c4/requirements.lock",
-      "sha256": "89623d92675621a9a90410359ca0d2ba5d2e13fb30189f2b6350f9037fd4da69",
+      "sha256": "eaa27ebc2d099e48c0e33e5cbc0889d0e8edbb884f118e14ab7c4652c728600f",
       "source_kind": "dependency_lock"
     }
   ],

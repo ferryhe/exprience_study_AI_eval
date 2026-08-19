@@ -72,11 +72,12 @@ environment containing secrets. They are materialized into a fresh sandbox with
 only the allowlisted starter files, fixtures, public tests, dependency lock, and
 task contract.
 
-Implementation status: the first phase now stores the exact extracted submission,
+Implementation status: the evaluator stores the exact extracted submission,
 uses a separate sandbox evaluation manifest, applies a deterministic static gate,
-and materializes approved source below `runs/`. The current policy is
-`pre_freeze`, so it deliberately blocks execution. Strong container execution,
-runtime adversarial suites, hidden black-box evaluation, reproducibility, and
+and materializes approved source below `runs/`. The C4 policy is frozen to a
+digest-pinned Docker image and runs public, external-black-box actuarial,
+prompt-injection-as-data, exfiltration-isolation, and reproducibility gates.
+Expanded resource-bomb adversarial suites and immutable human/actuarial
 promotion approval remain required before confirmatory code scoring.
 
 Sandbox requirements:

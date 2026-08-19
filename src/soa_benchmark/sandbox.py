@@ -1,9 +1,4 @@
-"""Non-executing codegen sandbox gate and evidence manifest builder.
-
-This module deliberately refuses host execution.  A pre-freeze policy can
-materialize statically approved code for inspection, but only a future
-digest-pinned strong backend may execute it.
-"""
+"""Static and digest-pinned Docker gates for code-generation submissions."""
 
 from __future__ import annotations
 
@@ -13,7 +8,6 @@ from datetime import datetime, timezone
 import json
 from pathlib import Path, PurePosixPath
 import re
-import shutil
 from typing import Any
 
 from jsonschema import Draft202012Validator, FormatChecker
@@ -37,9 +31,14 @@ from .runner import (
     ensure_safe_output_root,
     utc_now,
 )
+from .sandbox_docker import (
+    DockerSandboxUnavailable,
+    docker_backend_available,
+    run_docker_evaluation,
+)
 
 
-SANDBOX_EVALUATOR_VERSION = "0.1.0"
+SANDBOX_EVALUATOR_VERSION = "0.2.0"
 EVALUATION_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,119}$")
 POLICY_ROOTS = ("configs/sandbox/",)
 
@@ -340,7 +339,7 @@ def evaluate_codegen(
     output_root: Path,
     evaluation_id: str | None = None,
 ) -> Path:
-    """Create a static sandbox evaluation without ever executing on the host."""
+    """Scan, materialize, and conditionally execute a code submission in Docker."""
     started_at = utc_now()
     manifest, raw_manifest, submission_path, submission_raw = _load_source_run(run_manifest_path)
     policy = load_sandbox_policy(sandbox_policy_path)
@@ -376,6 +375,26 @@ def evaluate_codegen(
                 "Model-declared submission status is not completed.",
             )
         )
+    limits = policy.data["resource_limits"]
+    submitted_bytes = sum(
+        len(item["content"].encode("utf-8")) for item in submission.get("files", [])
+    )
+    if len(submission.get("files", [])) > limits["file_count"]:
+        findings.append(
+            _finding(
+                "file_count_limit_exceeded",
+                "submission",
+                "Submission exceeds the sandbox file-count limit.",
+            )
+        )
+    if submitted_bytes > limits["disk_mb"] * 1024 * 1024:
+        findings.append(
+            _finding(
+                "disk_limit_exceeded",
+                "submission",
+                "Submission exceeds the sandbox disk limit.",
+            )
+        )
     findings = sorted(
         findings,
         key=lambda item: (item["path"], item["line"] or 0, item["code"]),
@@ -388,8 +407,9 @@ def evaluate_codegen(
         "total_bytes": 0,
         "materialized_source_sha256": None,
     }
-    backend_available = shutil.which("docker") is not None
+    backend_available = docker_backend_available()
     failure_codes: list[str]
+    test_gates = _test_gates(policy)
     if findings:
         disposition = "failed"
         failure_codes = ["static_scan_failed"]
@@ -408,20 +428,61 @@ def evaluate_codegen(
             "total_bytes": total_bytes,
             "materialized_source_sha256": source_hash,
         }
-        disposition = "blocked"
         if policy.data["configuration_state"] != "frozen":
             block_code = "sandbox_policy_not_frozen"
+            disposition = "blocked"
+            failure_codes = [block_code]
+            execution = _empty_execution(
+                backend_available,
+                "blocked",
+                block_code,
+                policy.data["resource_limits"],
+            )
         elif not backend_available:
             block_code = "docker_backend_unavailable"
+            disposition = "blocked"
+            failure_codes = [block_code]
+            execution = _empty_execution(
+                backend_available,
+                "blocked",
+                block_code,
+                policy.data["resource_limits"],
+            )
         else:
-            block_code = "docker_execution_not_implemented"
-        failure_codes = [block_code]
-        execution = _empty_execution(
-            backend_available,
-            "blocked",
-            block_code,
-            policy.data["resource_limits"],
-        )
+            try:
+                dynamic = run_docker_evaluation(
+                    policy=policy.data,
+                    subject_root=ROOT / root,
+                    evaluation_id=generated,
+                    source_file_count=file_count,
+                    source_bytes=total_bytes,
+                )
+            except DockerSandboxUnavailable as exc:
+                disposition = "blocked"
+                failure_codes = [exc.code]
+                execution = _empty_execution(
+                    backend_available,
+                    "blocked",
+                    exc.code,
+                    policy.data["resource_limits"],
+                )
+            else:
+                stdout_path = evaluation_dir / "execution_stdout.json"
+                stderr_path = evaluation_dir / "execution_stderr.txt"
+                _safe_write(stdout_path, dynamic.stdout)
+                _safe_write(stderr_path, dynamic.stderr)
+                execution = dynamic.execution
+                execution.update(
+                    {
+                        "stdout_path": stdout_path.relative_to(ROOT).as_posix(),
+                        "stdout_sha256": sha256(dynamic.stdout),
+                        "stderr_path": stderr_path.relative_to(ROOT).as_posix(),
+                        "stderr_sha256": sha256(dynamic.stderr),
+                    }
+                )
+                test_gates = dynamic.test_gates
+                disposition = dynamic.machine_disposition
+                failure_codes = dynamic.failure_codes
 
     isolation = policy.data["isolation"]
     source_relative = submission_path.relative_to(ROOT).as_posix()
@@ -458,7 +519,7 @@ def evaluate_codegen(
         },
         "materialization": materialization,
         "execution": execution,
-        "test_gates": _test_gates(policy),
+        "test_gates": test_gates,
         "machine_disposition": disposition,
         "promotion_eligible": False,
         "failure_codes": failure_codes,

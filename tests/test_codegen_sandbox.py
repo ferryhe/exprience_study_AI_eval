@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import sys
 import tempfile
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
@@ -114,7 +115,19 @@ class CodegenSandboxTests(unittest.TestCase):
         codes = {finding["code"] for finding in scan_submission(submission, self.policy)}
         self.assertIn("forbidden_text_pattern", codes)
 
-    def test_safe_submission_materializes_but_pre_freeze_policy_blocks_execution(self) -> None:
+    def test_c4_contract_import_roots_are_allowlisted(self) -> None:
+        submission = json.loads(self._submission(
+            "from __future__ import annotations\n"
+            "import hashlib\n"
+            "import json\n"
+            "import polars as pl\n"
+            "from dataclasses import dataclass\n"
+            "from decimal import Decimal\n"
+            "from soa_experience.contracts import ExperienceInput\n"
+        ))
+        self.assertEqual(scan_submission(submission, self.policy), [])
+
+    def test_safe_submission_runs_with_frozen_policy(self) -> None:
         (ROOT / "runs").mkdir(exist_ok=True)
         safe = self._submission(
             "from decimal import Decimal\n\ndef ratio(actual, expected):\n"
@@ -123,23 +136,102 @@ class CodegenSandboxTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(dir=ROOT / "runs") as directory:
             root = Path(directory)
             run_manifest = self._create_run(safe, root, "safe-source")
-            evaluation = evaluate_codegen(
-                run_manifest,
-                "configs/sandbox/codegen-c4-v1.json",
-                root / "evaluations",
-                "safe-evaluation",
+            dynamic = SimpleNamespace(
+                execution={
+                    "attempted": True,
+                    "backend_available": True,
+                    "result": "passed",
+                    "failure_code": None,
+                    "exit_code": 0,
+                    "timed_out": False,
+                    "stdout_path": None,
+                    "stdout_sha256": None,
+                    "stderr_path": None,
+                    "stderr_sha256": None,
+                    "isolation_evidence": {
+                        "network_disabled": True,
+                        "read_only_root": True,
+                        "capabilities_dropped": True,
+                        "no_new_privileges": True,
+                        "non_root_user": True,
+                        "repository_not_mounted": True,
+                        "secrets_absent": True,
+                    },
+                    "limits": self.policy.data["resource_limits"],
+                    "observed_resources": {
+                        "wall_clock_seconds": 0.1,
+                        "cpu_seconds": None,
+                        "memory_peak_bytes": None,
+                        "disk_bytes": 1,
+                        "pids_peak": None,
+                        "file_count": 1,
+                        "output_bytes": 1,
+                    },
+                },
+                test_gates={
+                    "public": {"suite_id": "c4-public-v1", "status": "passed"},
+                    "hidden_actuarial": {
+                        "suite_id": "c4-hidden-actuarial-v1",
+                        "status": "passed",
+                    },
+                    "hidden_protocol": "external_black_box",
+                    "prompt_injection": {
+                        "suite_id": "codegen-prompt-injection-v1",
+                        "status": "passed",
+                    },
+                    "exfiltration": {
+                        "suite_id": "codegen-exfiltration-v1",
+                        "status": "passed",
+                    },
+                    "reproducibility": {
+                        "suite_id": "deterministic-replay-2",
+                        "status": "passed",
+                    },
+                },
+                machine_disposition="ready_for_human_review",
+                failure_codes=[],
+                stdout=b"{}\n",
+                stderr=b"",
             )
+            with (
+                patch("soa_benchmark.sandbox.docker_backend_available", return_value=True),
+                patch("soa_benchmark.sandbox.run_docker_evaluation", return_value=dynamic),
+            ):
+                evaluation = evaluate_codegen(
+                    run_manifest,
+                    "configs/sandbox/codegen-c4-v1.json",
+                    root / "evaluations",
+                    "safe-evaluation",
+                )
             record = json.loads(evaluation.read_text(encoding="utf-8"))
             self.assertEqual(record["source"]["api_status"], "response_contract_valid")
             self.assertEqual(record["static_scan"]["status"], "passed")
             self.assertEqual(record["materialization"]["status"], "completed")
-            self.assertFalse(record["execution"]["attempted"])
-            self.assertEqual(record["machine_disposition"], "blocked")
-            self.assertEqual(record["failure_codes"], ["sandbox_policy_not_frozen"])
+            self.assertTrue(record["execution"]["attempted"])
+            self.assertEqual(record["execution"]["result"], "passed")
+            self.assertEqual(record["machine_disposition"], "ready_for_human_review")
+            self.assertEqual(record["failure_codes"], [])
             self.assertFalse(record["promotion_eligible"])
             subject = ROOT / record["materialization"]["root"]
             self.assertTrue(subject.is_dir())
             self.assertFalse((subject / ".env.local").exists())
+
+    def test_safe_submission_blocks_when_docker_backend_is_unavailable(self) -> None:
+        (ROOT / "runs").mkdir(exist_ok=True)
+        safe = self._submission("from decimal import Decimal\nVALUE = Decimal('1')\n")
+        with tempfile.TemporaryDirectory(dir=ROOT / "runs") as directory:
+            root = Path(directory)
+            run_manifest = self._create_run(safe, root, "docker-unavailable-source")
+            with patch("soa_benchmark.sandbox.docker_backend_available", return_value=False):
+                evaluation = evaluate_codegen(
+                    run_manifest,
+                    "configs/sandbox/codegen-c4-v1.json",
+                    root / "evaluations",
+                    "docker-unavailable-evaluation",
+                )
+            record = json.loads(evaluation.read_text(encoding="utf-8"))
+            self.assertEqual(record["machine_disposition"], "blocked")
+            self.assertEqual(record["failure_codes"], ["docker_backend_unavailable"])
 
     def test_malicious_submission_is_not_materialized(self) -> None:
         (ROOT / "runs").mkdir(exist_ok=True)

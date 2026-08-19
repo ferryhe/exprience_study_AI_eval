@@ -69,7 +69,7 @@ calculation package, each submission must pass a declared sandbox gate:
 
 Sandbox failure is a benchmark outcome and must remain visible in the scorecard.
 
-Implemented first phase:
+Implemented C4 gate:
 
 - API success is recorded as `response_contract_valid`, with acceptance scope
   limited to transport and output-contract validation.
@@ -78,25 +78,32 @@ Implemented first phase:
 - `evaluate-codegen` validates the immutable handoff, applies an import/call/text
   static policy, materializes only statically approved files below `runs/`, and
   writes a separate sandbox evaluation manifest.
-- The current C4 policy is `pre_freeze`. It never executes code, never falls back
-  to host execution, and always leaves `promotion_eligible=false`.
+- The current C4 policy is `frozen` against a reproducibly built local image.
+  It enforces no network, a read-only root, all-capability drop,
+  no-new-privileges, a non-root user, an allowlisted read-only subject mount,
+  and declared resource limits.
+- Public, external-black-box actuarial, prompt-injection-as-data,
+  exfiltration-isolation, and deterministic replay gates run in fresh
+  containers. The repository, hidden expected values, and secrets are not
+  mounted.
+- The evaluator never falls back to host execution and always leaves
+  `promotion_eligible=false` pending human and actuarial approval.
 
-Example first-phase evaluation:
+Build verification and example evaluation:
 
 ```text
+python scripts/build_codegen_sandbox.py
 python scripts/run_benchmark.py evaluate-codegen --run-manifest runs/<run-id>/run_manifest.json
 ```
 
-Not yet implemented: digest-pinned Docker/WSL2 execution, enforced runtime
-resource and network controls, public execution tests, external-black-box hidden
-actuarial tests, prompt-injection/exfiltration runtime suites, deterministic
-replay, and immutable human/actuarial promotion records. Therefore a valid API
-response or passed static scan is not evidence that generated code is safe or
-approved.
+Not yet implemented: immutable human/actuarial promotion records and the full
+adversarial resource-bomb suite. Therefore a valid API response, passed static
+scan, or even `ready_for_human_review` is not evidence that generated code is
+approved for production.
 
 ## Remaining production gates
 
 - The actual challenge starter repository, hidden evaluator, score rubric, reviewer protocol, deterministic JSON-to-HTML/PDF renderer, and production evidence bundle are not supplied by these smoke fixtures.
-- Freeze and verify a digest-pinned strong container backend before any generated code is executed; native host execution is prohibited as a fallback.
+- Preserve and verify the digest-pinned strong container backend before generated code is executed; native host execution is prohibited as a fallback.
 - TTFT remains unavailable in the primary non-streaming lane. Compare round-trip and total elapsed time there; add a separately declared streaming measurement lane if TTFT is required.
 - Freeze the model list, price snapshot, prompt/input hashes, repetitions, cache lanes, time budget, and reviewer acceptance threshold before confirmatory execution.

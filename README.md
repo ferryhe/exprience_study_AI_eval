@@ -42,11 +42,13 @@ lockfile, isolate secrets and evaluator assets, enforce resource and time
 limits, run static/security scans, test prompt-injection and data-exfiltration
 cases, and require tests plus human approval before promotion.
 
-The implemented first sandbox phase stores the exact extracted submission,
-labels API success as `response_contract_valid`, applies a deterministic static
-policy gate, materializes only statically approved files below `runs/`, and emits
-a separate sandbox evaluation manifest. The public policy remains `pre_freeze`,
-so generated code is not executed and cannot become promotion-eligible yet.
+The sandbox stores the exact extracted submission, labels API success as
+`response_contract_valid`, applies a deterministic static policy gate, and
+materializes only statically approved files below `runs/`. A frozen,
+digest-pinned Docker image then runs public, external-black-box actuarial,
+prompt-injection, exfiltration-isolation, and deterministic replay gates without
+mounting the repository or secrets. Machine success means
+`ready_for_human_review`; it never makes code automatically promotion-eligible.
 
 ## Target Provider Routes
 
@@ -120,16 +122,20 @@ python scripts/run_benchmark.py preflight --pack-id report-v1 --input-manifest f
 
 These commands do not require API keys and do not send provider requests.
 
-After an API run has produced a code submission, the non-executing first-phase
-sandbox gate can be invoked with:
+Build and verify the frozen C4 sandbox image:
+
+```text
+python scripts/build_codegen_sandbox.py
+```
+
+After an API run has produced a code submission, invoke the sandbox gate with:
 
 ```text
 python scripts/run_benchmark.py evaluate-codegen --run-manifest runs/<run-id>/run_manifest.json
 ```
 
-Until the policy has a verified digest-pinned container image, this command can
-pass static scanning and materialization but must return a blocked machine
-disposition without executing generated code.
+The command never falls back to host execution. A missing Docker backend or
+frozen image returns a blocked machine disposition.
 
 ## Live Benchmark Gate
 
@@ -175,8 +181,7 @@ python scripts/run_benchmark.py run --pack-id codegen-c4-v1 --input-manifest fix
 ## Current Status
 
 The offline benchmark harness, synthetic fixtures, extracted-submission handoff,
-and non-executing static sandbox gate are testable. Formal API comparison still
-requires live capability probes, frozen effective model IDs, and official
-pricing snapshots. Formal code execution additionally requires a frozen strong
-container policy, public and external-black-box hidden tests, reproducibility
-checks, and separate human/actuarial promotion approval.
+and frozen Docker C4 sandbox are testable. Formal API comparison still requires
+live capability probes, frozen effective model IDs, and official pricing
+snapshots. Generated code that passes the machine gates still requires separate
+human code review and actuarial approval before promotion.

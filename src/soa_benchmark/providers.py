@@ -17,6 +17,12 @@ class ProviderError(RuntimeError):
 EXPECTED_ROUTES = {
     "openai": ("responses", "https://api.openai.com/v1", "/responses", "OPENAI_API_KEY"),
     "anthropic": ("messages", "https://api.anthropic.com/v1", "/messages", "ANTHROPIC_API_KEY"),
+    "minimax": (
+        "messages",
+        "https://api.minimaxi.com/anthropic",
+        "/v1/messages",
+        "MINIMAX_API_KEY",
+    ),
     "kimi": (
         "openai_chat_completions_compatible",
         "https://api.moonshot.ai/v1",
@@ -83,7 +89,7 @@ def load_provider_config(relative_path: str) -> ProviderConfig:
     missing = required - set(data)
     if missing:
         raise ProviderError(f"provider config missing fields: {sorted(missing)}")
-    if data["provider"] not in {"openai", "anthropic", "kimi", "deepseek"}:
+    if data["provider"] not in EXPECTED_ROUTES:
         raise ProviderError(f"unsupported provider: {data['provider']}")
     actual_route = (data["api_style"], data["base_url"], data["endpoint"], data["api_key_env"])
     if actual_route != EXPECTED_ROUTES[data["provider"]]:
@@ -136,7 +142,7 @@ def model_visible_hash_from_payload(provider: str, payload: dict[str, Any]) -> s
     if provider == "openai":
         system = payload["input"][0]["content"][0]["text"]
         user = payload["input"][1]["content"][0]["text"]
-    elif provider == "anthropic":
+    elif provider in {"anthropic", "minimax"}:
         system = payload["system"]
         user = payload["messages"][0]["content"]
     else:
@@ -156,6 +162,10 @@ def _reasoning_payload(config: ProviderConfig) -> dict[str, Any]:
         return {"reasoning": settings}
     if config.provider == "anthropic":
         return {"output_config": settings}
+    if config.provider == "minimax":
+        if settings not in ({"type": "disabled"}, {"type": "adaptive"}):
+            raise ProviderError("invalid MiniMax thinking-mode mapping")
+        return {"thinking": settings}
     if config.provider == "deepseek":
         if settings.get("thinking") != {"type": "enabled"} or settings.get("reasoning_effort") != "high":
             raise ProviderError("invalid DeepSeek thinking-mode mapping")
@@ -179,13 +189,15 @@ def build_payload(config: ProviderConfig, prompt: RenderedPrompt) -> dict[str, A
             "store": False,
             "service_tier": config.data["service_tier"],
         }
-    elif config.provider == "anthropic":
+    elif config.provider in {"anthropic", "minimax"}:
         payload = {
             "model": config.data["requested_model_id"],
             "max_tokens": config.data["max_output_tokens"],
             "system": prompt.system,
             "messages": [{"role": "user", "content": prompt.user}],
         }
+        if config.provider == "minimax":
+            payload["service_tier"] = config.data["service_tier"]
     else:
         payload = {
             "model": config.data["requested_model_id"],
@@ -208,7 +220,7 @@ def endpoint_url(config: ProviderConfig) -> str:
 
 def request_headers(config: ProviderConfig, api_key: str) -> dict[str, str]:
     headers = {"Content-Type": "application/json", "User-Agent": "soa-experience-ai-eval/0.1"}
-    if config.provider == "anthropic":
+    if config.provider in {"anthropic", "minimax"}:
         headers.update({"x-api-key": api_key, "anthropic-version": "2023-06-01"})
     else:
         headers["Authorization"] = f"Bearer {api_key}"
@@ -233,7 +245,7 @@ def extract_text(config: ProviderConfig, response: dict[str, Any]) -> str:
                     parts.append(content["text"])
         if parts:
             return "".join(parts)
-    elif config.provider == "anthropic":
+    elif config.provider in {"anthropic", "minimax"}:
         content = response.get("content", [])
         if not isinstance(content, list):
             raise ProviderError(f"invalid content collection in {config.alias} response")
@@ -326,14 +338,20 @@ def normalize_usage(config: ProviderConfig, response: dict[str, Any]) -> dict[st
         if total is None and input_tokens is not None and output_tokens is not None:
             total = input_tokens + output_tokens
         reasoning = _token(output_details.get("reasoning_tokens"))
-    elif config.provider == "anthropic":
+    elif config.provider in {"anthropic", "minimax"}:
         uncached = _token(usage.get("input_tokens"))
         cache_read = _token(usage.get("cache_read_input_tokens")) or 0
         cache_write = _token(usage.get("cache_creation_input_tokens")) or 0
         input_tokens = None if uncached is None else uncached + cache_read + cache_write
         output_tokens = _token(usage.get("output_tokens"))
         total = None if input_tokens is None or output_tokens is None else input_tokens + output_tokens
-        reasoning = _token(usage.get("reasoning_tokens"))
+        if config.provider == "minimax":
+            output_details = usage.get("output_tokens_details") or {}
+            if not isinstance(output_details, dict):
+                output_details = {}
+            reasoning = _token(output_details.get("thinking_tokens"))
+        else:
+            reasoning = _token(usage.get("reasoning_tokens"))
     elif config.provider == "deepseek":
         input_tokens = _token(usage.get("prompt_tokens"))
         cache_read = _token(usage.get("prompt_cache_hit_tokens")) or 0
